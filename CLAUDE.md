@@ -6,7 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `prelegal` is a platform for drafting common legal agreements. Expected completion: 2026-06-23.
 
-Planned stack (inferred from `.gitignore`): FastAPI backend + Next.js frontend, with `uv` as the Python package manager.
+Stack: Next.js 16 frontend (TypeScript, Tailwind CSS, `@react-pdf/renderer`). FastAPI backend is planned but not yet scaffolded. Python package manager is `uv`.
+
+## Repository Layout
+
+```
+catalog.json        index of all legal templates
+templates/          12 CommonPaper standard agreements in Markdown
+frontend/           Next.js app (the current UI)
+scripts/            helper scripts for running the dev server
+```
 
 ## Dataset: Legal Templates
 
@@ -20,9 +29,30 @@ Planned stack (inferred from `.gitignore`): FastAPI backend + Next.js frontend, 
 
 Cover pages are separate files (e.g., `Mutual-NDA-coverpage.md`) and reference the standard terms document by incorporation.
 
-## Development Commands
+## Development — Frontend
 
-No build system exists yet. Once the backend and frontend are scaffolded:
+The frontend lives in `frontend/`. All commands must be run from that directory.
 
-- Python (backend): use `uv run` and `uv add` — never `python3` or `pip`
-- Frontend: Next.js (scaffolded with `npx create-next-app` or equivalent)
+| Action | Command |
+|---|---|
+| Start dev server | `npm run dev` (or `scripts\start-dev.ps1`) |
+| Stop dev server | `scripts\stop-dev.ps1` |
+| Production build | `npm run build` |
+
+Dev server runs at **http://localhost:3000**.
+
+### Using the scripts
+
+From the project root (PowerShell):
+
+```powershell
+.\scripts\start-dev.ps1   # starts Next.js on localhost:3000
+.\scripts\stop-dev.ps1    # kills whatever is listening on port 3000
+```
+
+## Development — Backend (planned)
+
+Not yet scaffolded. When added:
+
+- Use `uv run` and `uv add` — never `python3` or `pip`
+- FastAPI, entry point TBD
