@@ -23,22 +23,35 @@ itself (see `playwright.config.ts`). First run needs the browser binary:
 - `lib/template.ts`: parsing headings, paragraphs, bold, lists (markers,
   indentation, checkboxes), tables, and `*_link` placeholder segments; plus a
   real full template parsed without leaking HTML.
-- `ChatPanel`: the greeting on mount, sending a message and showing the reply,
-  reporting the document/fields result, and the error state on a failed request.
+- `lib/auth.ts`: token storage on login/signup, auth headers, duplicate-username
+  handling, and logout clearing the token.
+- `lib/documents.ts`: list/create/update sending the auth header and right verbs.
 - `lib/chat.ts`: `sendChat`, `fetchTemplate`, and `fieldsToMap`.
-- `TemplatePreview`: rendering template text and filling placeholders from fields.
-- E2E: login redirect, the greeting + empty preview state, choosing a document
-  (mocked `/api/chat` + `/api/templates`) and seeing the filled preview, and a
-  real PDF download.
+- `ChatPanel`, `TemplatePreview`, `Dialog` (Confirm/Notice/Prompt), and the
+  login/signup/AuthGuard behaviours.
+- E2E: login redirect, Home options, creator filling the preview, the Save name
+  dialog, the Generate-PDF unsaved-changes notice + download, and the saved-docs
+  list + download (backend mocked via route interception).
 
 ---
 
 ## Manual test checklist
 
 Run `npm run dev` and open http://localhost:3000 (or the full app on :8000 via
-the start script). Sign in with `demo` / `demo` first — the creator is gated
-behind the login. These cover things the automated suite cannot assert (visual
+the start script). Sign in with `demo` / `demo`, or create a new account via the
+sign-up link. These cover things the automated suite cannot assert (visual
 fidelity, real PDF output, accessibility, and OS-level behaviour).
+
+### Accounts & navigation
+- [ ] Sign up creates an account and lands on Home; a duplicate username is rejected.
+- [ ] Home shows Start New Conversation and Download Saved Documents, plus Log Out.
+- [ ] Save and Generate PDF appear only after a document type is selected.
+- [ ] Save prompts for a name (custom dialog); re-saving updates the same entry.
+- [ ] Home / Log Out with unsaved changes show a custom warning (continue/cancel);
+      with nothing unsaved they navigate directly.
+- [ ] Generate PDF with unsaved changes shows a one-button notice, then downloads.
+- [ ] Saved Documents lists your saved docs with Download, plus Home and Log Out;
+      another user does not see your documents.
 
 ### Chat (needs the backend running with a valid `GROQ_API_KEY`)
 - [ ] The assistant greets and asks which document on load.
@@ -51,7 +64,7 @@ fidelity, real PDF output, accessibility, and OS-level behaviour).
 - [ ] A backend/LLM failure shows the inline "Please try again" error.
 
 ### PDF output (open the downloaded file)
-- [ ] Click **Download PDF**; a PDF named after the document opens.
+- [ ] Click **Generate PDF** (creator) or **Download** (saved docs); a PDF named after the document opens.
 - [ ] **Unfilled** placeholders show a **red underline** in the PDF (and are NOT
       red in the on-screen preview).
 - [ ] Filled placeholder values appear (underlined), bold runs render bold, and

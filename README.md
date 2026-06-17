@@ -8,10 +8,11 @@ fields.
 
 In progress — expected completion 2026-06-23.
 
-Currently implemented: a fake login (dummy `demo` / `demo`) gating an AI chat
-that lets the user pick any of the 11 catalog document types and fills it from a
-free-form conversation, with a live preview and PDF download. Served by a
-FastAPI backend.
+Currently implemented: multi-user accounts (sign up / sign in, bcrypt + token
+sessions) gating an AI chat that lets the user pick any of the 11 catalog
+document types and fills it from a free-form conversation, with a live preview,
+PDF download, and per-user saved documents. Served by a FastAPI backend with a
+persistent SQLite database. A seeded `demo` / `demo` account is available.
 
 ## Running the app
 

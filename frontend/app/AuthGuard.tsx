@@ -10,15 +10,15 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const [ready, setReady] = useState(false)
 
-  const onLoginPage = pathname?.startsWith('/login') ?? false
+  const isPublic = pathname?.startsWith('/login') || pathname?.startsWith('/signup') || false
 
   useEffect(() => {
-    if (onLoginPage || isLoggedIn()) {
+    if (isPublic || isLoggedIn()) {
       setReady(true)
     } else {
       router.replace('/login')
     }
-  }, [onLoginPage, router])
+  }, [isPublic, router])
 
   if (!ready) return null
 

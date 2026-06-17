@@ -14,8 +14,7 @@ class Base(DeclarativeBase):
 
 
 def init_db() -> None:
-    """Create the schema. The drop is temporary — remove it to persist data."""
+    """Create any missing tables. Data persists across restarts."""
     from app import models  # noqa: F401  register models on Base.metadata
 
-    Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)

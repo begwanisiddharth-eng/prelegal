@@ -1,18 +1,27 @@
-/** Client-side login helpers. A lightweight stand-in until real sessions exist. */
+/** Token-based auth helpers backed by the FastAPI session API. */
 
 import { API_BASE } from './api'
 
-const FLAG_KEY = 'prelegal.loggedIn'
+const TOKEN_KEY = 'prelegal.token'
+
+export function getToken(): string | null {
+  return typeof window !== 'undefined' ? window.localStorage.getItem(TOKEN_KEY) : null
+}
 
 export function isLoggedIn(): boolean {
-  return typeof window !== 'undefined' && window.localStorage.getItem(FLAG_KEY) === 'true'
+  return !!getToken()
 }
 
-export function logout(): void {
-  window.localStorage.removeItem(FLAG_KEY)
+/** Authorization header for authenticated API calls. */
+export function authHeaders(): Record<string, string> {
+  const token = getToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
-/** Verify credentials against the backend and record the logged-in flag. */
+function setToken(token: string): void {
+  window.localStorage.setItem(TOKEN_KEY, token)
+}
+
 export async function login(username: string, password: string): Promise<boolean> {
   const response = await fetch(`${API_BASE}/api/login`, {
     method: 'POST',
@@ -20,6 +29,35 @@ export async function login(username: string, password: string): Promise<boolean
     body: JSON.stringify({ username, password }),
   })
   if (!response.ok) return false
-  window.localStorage.setItem(FLAG_KEY, 'true')
+  setToken((await response.json()).token)
   return true
+}
+
+export interface SignupResult {
+  ok: boolean
+  error?: string
+}
+
+export async function signup(username: string, password: string): Promise<SignupResult> {
+  const response = await fetch(`${API_BASE}/api/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  })
+  if (response.ok) {
+    setToken((await response.json()).token)
+    return { ok: true }
+  }
+  if (response.status === 409) return { ok: false, error: 'That username is already taken.' }
+  return { ok: false, error: 'Sign-up failed. Please try again.' }
+}
+
+/** Invalidate the session on the server (best-effort) and clear the local token. */
+export async function logout(): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/api/logout`, { method: 'POST', headers: authHeaders() })
+  } catch {
+    // Clear locally regardless of network result.
+  }
+  window.localStorage.removeItem(TOKEN_KEY)
 }

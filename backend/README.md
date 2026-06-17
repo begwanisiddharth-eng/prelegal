@@ -16,8 +16,13 @@ use the project-root start script, which builds the frontend first.
 ## Endpoints
 
 - `GET /api/health` — liveness check.
-- `POST /api/login` `{username, password}` — validates against the `users`
-  table (seeded with `demo` / `demo`). No real authentication yet.
+- `POST /api/signup` `{username, password}` — create an account (bcrypt-hashed);
+  returns a session token. Duplicate usernames return 409.
+- `POST /api/login` `{username, password}` — returns a session token. A `demo` /
+  `demo` account is seeded.
+- `POST /api/logout` — invalidates the caller's token.
+- `GET/POST/PUT /api/documents` — per-user saved documents (auth required via
+  `Authorization: Bearer <token>`); each user sees only their own.
 - `GET /api/catalog` — the 11 selectable document types (cover-page entry excluded).
 - `GET /api/templates/{filename}` — a template's markdown plus its parsed
   placeholder list (`<span class="*_link">Name</span>` fields).
@@ -28,9 +33,9 @@ use the project-root start script, which builds the frontend first.
 
 ## Database
 
-Temporary SQLite, recreated on startup. The path is configurable via
-`PRELEGAL_DB_PATH`; making it persistent later means removing the `drop_all` in
-`app/db.py`.
+Persistent SQLite (path configurable via `PRELEGAL_DB_PATH`). `init_db` creates
+any missing tables on startup and never drops them, so users, sessions, and
+saved documents survive restarts. Conversations are not stored.
 
 ## Test
 

@@ -17,7 +17,7 @@ describe('AuthGuard', () => {
     pathname = '/'
   })
 
-  it('redirects to /login when not authenticated', async () => {
+  it('redirects to /login when there is no token', async () => {
     render(
       <AuthGuard>
         <div>secret</div>
@@ -27,8 +27,8 @@ describe('AuthGuard', () => {
     expect(screen.queryByText('secret')).not.toBeInTheDocument()
   })
 
-  it('renders children when authenticated', async () => {
-    window.localStorage.setItem('prelegal.loggedIn', 'true')
+  it('renders children when a token is present', async () => {
+    window.localStorage.setItem('prelegal.token', 't')
     render(
       <AuthGuard>
         <div>secret</div>
@@ -38,14 +38,14 @@ describe('AuthGuard', () => {
     expect(replace).not.toHaveBeenCalled()
   })
 
-  it('renders the login page without redirecting', async () => {
-    pathname = '/login'
+  it('allows the signup page without a token', async () => {
+    pathname = '/signup'
     render(
       <AuthGuard>
-        <div>login form</div>
+        <div>signup</div>
       </AuthGuard>,
     )
-    expect(await screen.findByText('login form')).toBeInTheDocument()
+    expect(await screen.findByText('signup')).toBeInTheDocument()
     expect(replace).not.toHaveBeenCalled()
   })
 })

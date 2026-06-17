@@ -43,12 +43,9 @@ Status); items marked **(target)** below are not fully realized yet.
 - Backend in `backend/` — a `uv` project using FastAPI + SQLAlchemy.
 - Frontend in `frontend/` — the Next.js app, statically exported and served by
   FastAPI in production.
-- Database: SQLite via SQLAlchemy. **(target)** Data persists across backend
-  restarts — the users table (supporting sign up and sign in) must be
-  preserved, not recreated or wiped, when the backend is stopped and started
-  again. Today it is a temporary database (recreated on each startup) with a
-  config-driven path (`PRELEGAL_DB_PATH`), so switching to persistent storage
-  is a one-line change.
+- Database: SQLite via SQLAlchemy, **persistent** across restarts (config-driven
+  path `PRELEGAL_DB_PATH`; tables created if missing, never wiped). Holds users,
+  sessions, and saved documents. Conversations are not persisted.
 - Frontend is statically built (`output: 'export'`) and served from FastAPI.
 - Start/stop scripts in `scripts/` for each platform:
 
@@ -160,3 +157,22 @@ faithful to the generated PDF.
   retries on a malformed response (Groq's strict json_schema mode was brittle).
 - Removed the MNDA-specific `lib/mnda.ts`, `MNDAHtmlPreview`, `MNDAPdfDocument`,
   and `MNDADownloadButton`. Tests updated across backend, Vitest, and E2E.
+
+### Implemented PL-7
+
+- Multiple users, each with their own sign-in and private saved documents.
+  Real auth: bcrypt-hashed passwords, token sessions (`Authorization: Bearer`),
+  and a now-persistent SQLite DB. Conversations are not persisted.
+- Backend (`app/auth.py`, `app/models.py`): `POST /api/signup`, `/api/login`,
+  `/api/logout`; `users`, `sessions`, `saved_documents` tables; a
+  `get_current_user` dependency; `GET/POST/PUT /api/documents` (per-user,
+  isolated). `init_db` now creates missing tables only (no drop).
+- Frontend screens: `/login` (with a sign-up link), `/signup` (auto-login on
+  success), Home `/` (Start New Conversation / Download Saved Documents),
+  creator `/create`, and `/saved`. `lib/auth.ts` is token-based; `lib/documents.ts`
+  is the saved-docs client; `lib/pdf.tsx` is the shared PDF download.
+- Save flow: Save and Generate PDF appear only once a document is chosen. First
+  Save prompts for a name (custom dialog) and creates the entry; later saves
+  update it. Unsaved-changes warnings (custom dialogs) gate Home and Log Out;
+  Generate PDF shows a one-button notice when there are unsaved changes, then
+  downloads. All dialogs are custom in-app components in `components/Dialog.tsx`.
