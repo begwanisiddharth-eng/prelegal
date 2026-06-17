@@ -2,6 +2,20 @@ import { test, expect } from '@playwright/test'
 
 const LOGIN_FLAG = 'prelegal.loggedIn'
 
+// A complete MNDA fields object, matching what the backend always returns.
+const baseFields = {
+  purpose: '',
+  effectiveDate: '2026-01-01',
+  mndaTermType: 'fixed',
+  mndaTermYears: '1',
+  confidentialityTermType: 'fixed',
+  confidentialityTermYears: '1',
+  governingLaw: '',
+  jurisdiction: '',
+  party1: { printName: '', title: '', company: '', noticeAddress: '', date: '' },
+  party2: { printName: '', title: '', company: '', noticeAddress: '', date: '' },
+}
+
 test('redirects to the login page when not authenticated', async ({ page }) => {
   await page.goto('/')
   await expect(page).toHaveURL(/\/login/)
@@ -14,44 +28,46 @@ test.describe('MNDA creator (authenticated)', () => {
     await page.addInitScript((flag) => {
       window.localStorage.setItem(flag, 'true')
     }, LOGIN_FLAG)
-    await page.goto('/')
   })
 
-  test('renders the creator with form and live preview', async ({ page }) => {
+  test('renders the chat and the live preview', async ({ page }) => {
+    await page.goto('/')
     await expect(page.getByRole('heading', { name: 'Mutual NDA Creator' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Mutual Non-Disclosure Agreement' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Standard Terms' })).toBeVisible()
+    await expect(page.getByText(/help you put together a Mutual NDA/)).toBeVisible()
   })
 
-  test('preview updates live as the form is edited', async ({ page }) => {
-    const purpose = page.getByLabel('Purpose')
-    await purpose.fill('Evaluating a joint venture')
-    // The cover-page value paragraph (excludes the textarea and the clause bodies
-    // that also reference the Purpose).
-    await expect(
-      page.getByRole('paragraph').filter({ hasText: /^Evaluating a joint venture$/ }),
-    ).toBeVisible()
+  test('a chat answer updates the live preview', async ({ page }) => {
+    await page.route('**/api/chat', async (route) => {
+      await route.fulfill({
+        json: { reply: 'Got it.', fields: { ...baseFields, governingLaw: 'Delaware' } },
+      })
+    })
+    await page.goto('/')
+    await page.getByLabel('Message').fill('Governing law is Delaware')
+    await page.getByRole('button', { name: 'Send' }).click()
 
-    await page.getByLabel('Governing Law (state)').fill('Delaware')
+    await expect(page.getByText('Got it.')).toBeVisible()
     await expect(page.getByText(/laws of the State of Delaware/).first()).toBeVisible()
   })
 
-  test('trade-secret carve-out toggles with the confidentiality term', async ({ page }) => {
+  test('trade-secret carve-out toggles when the term becomes perpetual', async ({ page }) => {
+    await page.route('**/api/chat', async (route) => {
+      await route.fulfill({
+        json: { reply: 'Updated.', fields: { ...baseFields, confidentialityTermType: 'perpetuity' } },
+      })
+    })
+    await page.goto('/')
     await expect(page.getByText(/in the case of trade secrets/)).toBeVisible()
-    await page.getByText('In perpetuity').click()
+
+    await page.getByLabel('Message').fill('Make confidentiality perpetual')
+    await page.getByRole('button', { name: 'Send' }).click()
+
     await expect(page.getByText(/in the case of trade secrets/)).toHaveCount(0)
   })
 
-  test('radios with a shared name behave as one group', async ({ page }) => {
-    await page.getByText('Continues until terminated').click()
-    const yearsInput = page.getByRole('spinbutton').first()
-    await expect(yearsInput).toBeDisabled()
-    await expect(
-      page.getByText('the date of termination in accordance with the terms of the MNDA').first(),
-    ).toBeVisible()
-  })
-
   test('downloads a non-empty PDF named mutual-nda.pdf', async ({ page }) => {
+    await page.goto('/')
     const downloadPromise = page.waitForEvent('download')
     await page.getByRole('button', { name: 'Download PDF' }).click()
     const download = await downloadPromise

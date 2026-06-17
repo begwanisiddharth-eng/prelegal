@@ -126,3 +126,17 @@ default theme `#ffffff` / `#171717`):
   replace the old `start-dev.ps1` / `stop-dev.ps1`.
 - pytest suite for the backend; Vitest tests for the login page, auth helper,
   and guard; an E2E test for the login redirect.
+
+### Implemented PL-5
+
+- AI chat replaces the manual form: the left panel is now a freeform chat
+  (`ChatPanel`) that asks about the document and populates the MNDA fields from
+  the user's answers. The live HTML preview and PDF download are unchanged.
+- Backend `POST /api/chat` (`app/chat.py`) calls the LLM via the
+  `groq-inference` skill (LiteLLM → `groq/openai/gpt-oss-120b`, Structured
+  Outputs) and returns the assistant reply plus the full MNDA field set. The
+  endpoint is stateless — the frontend sends the conversation and current
+  fields each turn.
+- Still Mutual-NDA-only; no document-type selection yet.
+- pytest for the chat endpoint (LLM call stubbed); Vitest for `ChatPanel` and
+  the chat client; E2E drives the chat with a mocked `/api/chat`.

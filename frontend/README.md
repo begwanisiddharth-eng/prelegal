@@ -21,17 +21,19 @@ app is statically exported (`output: 'export'`) for the backend to serve.
 
 ```
 app/
-  page.tsx                MNDA Creator — layout and form state
+  page.tsx                MNDA Creator — layout and document state
   login/page.tsx          login screen (posts to /api/login)
   AuthGuard.tsx           gates pages behind the login flag
 components/
-  MNDAForm.tsx            left-hand form panel
+  ChatPanel.tsx           left-hand AI chat (posts to /api/chat)
   MNDAHtmlPreview.tsx     live HTML preview (right panel)
   MNDADownloadButton.tsx  generates the PDF on click
   MNDAPdfDocument.tsx     react-pdf document definition (used for download)
 lib/
-  mnda.ts                 form data types, defaults, template logic
-  auth.ts                 login/logout helpers and the API base
+  mnda.ts                 document data types, defaults, template logic
+  chat.ts                 chat client (sendChat)
+  auth.ts                 login/logout helpers
+  api.ts                  shared API base URL
 ```
 
 ## Key behaviour notes

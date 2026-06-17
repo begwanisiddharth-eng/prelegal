@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 
 from app import config
+from app.chat import ChatRequest, ChatResponse, run_chat
 from app.db import SessionLocal, init_db
 from app.models import User
 
@@ -58,6 +59,11 @@ def login(req: LoginRequest) -> dict:
     if user is None or user.password != req.password:
         raise HTTPException(status_code=401, detail="Invalid username or password")
     return {"ok": True, "username": user.username}
+
+
+@app.post("/api/chat")
+def chat(req: ChatRequest) -> ChatResponse:
+    return run_chat(req)
 
 
 # Serve the statically-exported frontend (when built). Mounted last so the

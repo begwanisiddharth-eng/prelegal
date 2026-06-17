@@ -3,9 +3,14 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 APP_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = APP_DIR.parent
 PROJECT_ROOT = BACKEND_DIR.parent
+
+# Load the project-root .env so GROQ_API_KEY is available to the LLM client.
+load_dotenv(PROJECT_ROOT / ".env")
 
 # SQLite database location. Temporary by default (recreated on startup); point
 # PRELEGAL_DB_PATH at a durable location when persistence is introduced.

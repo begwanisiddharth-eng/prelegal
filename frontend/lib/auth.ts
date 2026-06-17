@@ -1,10 +1,8 @@
 /** Client-side login helpers. A lightweight stand-in until real sessions exist. */
 
-const FLAG_KEY = 'prelegal.loggedIn'
+import { API_BASE } from './api'
 
-// Empty in production (same origin as the backend); set to the backend URL in
-// dev, where the Next.js server and FastAPI run on different ports.
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? ''
+const FLAG_KEY = 'prelegal.loggedIn'
 
 export function isLoggedIn(): boolean {
   return typeof window !== 'undefined' && window.localStorage.getItem(FLAG_KEY) === 'true'

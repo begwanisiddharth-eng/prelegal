@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
-import MNDAForm from '@/components/MNDAForm'
+import ChatPanel from '@/components/ChatPanel'
 import MNDAHtmlPreview from '@/components/MNDAHtmlPreview'
 import { defaultFormData, type MNDAFormData } from '@/lib/mnda'
 
@@ -20,13 +20,15 @@ export default function Page() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
-      {/* Form panel */}
-      <div className="w-1/2 overflow-y-auto bg-white border-r border-gray-200">
-        <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 z-10">
+      {/* Chat panel */}
+      <div className="w-1/2 flex flex-col bg-white border-r border-gray-200">
+        <div className="border-b border-gray-100 px-6 py-4">
           <h1 className="text-lg font-semibold text-gray-900">Mutual NDA Creator</h1>
-          <p className="text-xs text-gray-500 mt-0.5">Fill in the details to generate your agreement</p>
+          <p className="text-xs text-gray-500 mt-0.5">Chat with the assistant to fill in your agreement</p>
         </div>
-        <MNDAForm data={formData} onChange={setFormData} />
+        <div className="flex-1 min-h-0">
+          <ChatPanel data={formData} onChange={setFormData} />
+        </div>
       </div>
 
       {/* Preview panel */}
