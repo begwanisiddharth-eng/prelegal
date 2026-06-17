@@ -36,6 +36,9 @@ ENV/
 # FastAPI / uvicorn
 *.log
 
+# SQLite (temporary database)
+*.db
+
 # Node / Next.js
 node_modules/
 .next/

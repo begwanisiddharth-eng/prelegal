@@ -4,24 +4,26 @@ Next.js 16 app (TypeScript, Tailwind CSS, `@react-pdf/renderer`).
 
 ## Running
 
-From the **project root**:
+For the full app (frontend built and served by the backend on :8000), use the
+project-root start script for your platform, e.g. `.\scripts\start-windows.ps1`.
 
-```powershell
-.\scripts\start-dev.ps1   # http://localhost:3000
-.\scripts\stop-dev.ps1
-```
-
-Or directly from this directory:
+For frontend-only development on :3000:
 
 ```bash
 npm run dev
 ```
 
+In dev, point the frontend at the backend by setting `NEXT_PUBLIC_API_BASE`
+(e.g. `http://localhost:8000`); in production it is same-origin and unset. The
+app is statically exported (`output: 'export'`) for the backend to serve.
+
 ## Structure
 
 ```
 app/
-  page.tsx                main page — layout and form state
+  page.tsx                MNDA Creator — layout and form state
+  login/page.tsx          login screen (posts to /api/login)
+  AuthGuard.tsx           gates pages behind the login flag
 components/
   MNDAForm.tsx            left-hand form panel
   MNDAHtmlPreview.tsx     live HTML preview (right panel)
@@ -29,6 +31,7 @@ components/
   MNDAPdfDocument.tsx     react-pdf document definition (used for download)
 lib/
   mnda.ts                 form data types, defaults, template logic
+  auth.ts                 login/logout helpers and the API base
 ```
 
 ## Key behaviour notes

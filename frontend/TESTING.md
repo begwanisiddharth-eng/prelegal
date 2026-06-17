@@ -36,9 +36,10 @@ itself (see `playwright.config.ts`). First run needs the browser binary:
 
 ## Manual test checklist
 
-Run `npm run dev` and open http://localhost:3000. These cover things the
-automated suite cannot assert (visual fidelity, real PDF output, accessibility,
-and OS-level behaviour).
+Run `npm run dev` and open http://localhost:3000 (or the full app on :8000 via
+the start script). Sign in with `demo` / `demo` first — the creator is gated
+behind the login. These cover things the automated suite cannot assert (visual
+fidelity, real PDF output, accessibility, and OS-level behaviour).
 
 ### PDF output (open the downloaded file)
 - [ ] Click **Download PDF** with the default form; a `mutual-nda.pdf` opens.

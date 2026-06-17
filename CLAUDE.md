@@ -37,15 +37,19 @@ fields in the legal document.
 
 ## Technical design
 
-This is the target architecture. Much of it is **not yet built** — see
-Implementation Status for what actually exists today.
+This is the target architecture. The scaffolding exists (see Implementation
+Status); items marked **(target)** below are not fully realized yet.
 
-- Backend in `backend/` — a `uv` project using FastAPI.
-- Frontend in `frontend/` — the Next.js app.
-- Database: SQLite, created fresh each time the backend starts, with a users
-  table supporting sign up and sign in.
-- Prefer statically building the frontend and serving it from FastAPI if
-  feasible.
+- Backend in `backend/` — a `uv` project using FastAPI + SQLAlchemy.
+- Frontend in `frontend/` — the Next.js app, statically exported and served by
+  FastAPI in production.
+- Database: SQLite via SQLAlchemy. **(target)** Data persists across backend
+  restarts — the users table (supporting sign up and sign in) must be
+  preserved, not recreated or wiped, when the backend is stopped and started
+  again. Today it is a temporary database (recreated on each startup) with a
+  config-driven path (`PRELEGAL_DB_PATH`), so switching to persistent storage
+  is a one-line change.
+- Frontend is statically built (`output: 'export'`) and served from FastAPI.
 - Start/stop scripts in `scripts/` for each platform:
 
 ```bash
@@ -62,9 +66,11 @@ scripts/start-windows.ps1
 scripts/stop-windows.ps1
 ```
 
-- Backend served at http://localhost:8000.
+- Backend (and the frontend it serves) at http://localhost:8000.
 
-When the backend is added: use `uv run` and `uv add` — never `python3` or `pip`.
+In the backend, use `uv run` and `uv add` — never `python3` or `pip`. In dev the
+Next.js server runs separately on :3000 and reaches the API via
+`NEXT_PUBLIC_API_BASE`; in production everything is same-origin on :8000.
 
 ## Dataset: Legal Templates
 
@@ -106,4 +112,17 @@ default theme `#ffffff` / `#171717`):
   updates on every keystroke and a Download button that generates the PDF via
   `@react-pdf/renderer` on click. Details in `frontend/CLAUDE.md`.
 - Vitest unit/component tests and Playwright E2E tests for the NDA Creator.
-- Windows dev scripts: `scripts/start-dev.ps1`, `scripts/stop-dev.ps1`.
+
+### Implemented PL-4
+
+- Backend in `backend/` (FastAPI + SQLAlchemy, `uv` project): `GET /api/health`
+  and `POST /api/login`, which validates against a temporary SQLite `users`
+  table seeded with a dummy `demo` / `demo` user. No real authentication yet.
+- Frontend configured for static export and served by FastAPI on :8000. A login
+  page posts to `/api/login`; a client-side flag (`AuthGuard`) gates the MNDA
+  Creator, which is otherwise unchanged.
+- Cross-platform start/stop scripts (`scripts/start-{windows,mac,linux}` and
+  matching `stop-*`) that build the frontend then run FastAPI on :8000. These
+  replace the old `start-dev.ps1` / `stop-dev.ps1`.
+- pytest suite for the backend; Vitest tests for the login page, auth helper,
+  and guard; an E2E test for the login redirect.
