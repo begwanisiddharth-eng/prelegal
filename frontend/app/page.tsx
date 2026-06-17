@@ -23,7 +23,7 @@ export default function Home() {
         </button>
       </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center gap-6 bg-gray-50 p-6 sm:flex-row">
+      <main className="flex flex-1 flex-col items-center justify-center gap-6 bg-gray-50 p-6 sm:flex-row sm:items-stretch">
         <button
           onClick={() => router.push('/create')}
           className="w-64 rounded-lg border border-gray-200 bg-white p-8 text-center shadow-sm transition-colors hover:border-brand-blue"

@@ -32,7 +32,6 @@ export default function LoginPage() {
         className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
       >
         <h1 className="text-lg font-semibold text-brand-navy">Sign in to Prelegal</h1>
-        <p className="mt-0.5 text-xs text-brand-gray">Use demo / demo for now.</p>
 
         <label className="mt-4 block text-sm text-gray-700">
           Username
