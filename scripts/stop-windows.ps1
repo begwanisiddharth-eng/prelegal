@@ -1,7 +1,7 @@
-# Stop the Next.js dev server by killing whatever is listening on port 3000
-$connections = Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue
+# Stop the backend by killing whatever is listening on port 8000
+$connections = Get-NetTCPConnection -LocalPort 8000 -State Listen -ErrorAction SilentlyContinue
 if (-not $connections) {
-    Write-Host "Nothing is listening on port 3000"
+    Write-Host "Nothing is listening on port 8000"
     exit 0
 }
 $pids = $connections | Select-Object -ExpandProperty OwningProcess -Unique

@@ -10,6 +10,8 @@ The right-hand preview is a live **HTML** rendering (`MNDAHtmlPreview.tsx`) that
 
 All components are in `components/`. Shared types and template logic are in `lib/mnda.ts`.
 
+The app is gated behind a fake login. `app/login/page.tsx` posts to the backend `POST /api/login` (helpers in `lib/auth.ts`) and sets a `localStorage` flag; `app/AuthGuard.tsx` (wired into `layout.tsx`) redirects to `/login` until that flag is set. The MNDA Creator itself is unchanged. The app is statically exported (`output: 'export'`) and served by FastAPI on :8000; in dev, set `NEXT_PUBLIC_API_BASE` to reach the backend across origins.
+
 ## Commands (run from this directory)
 
 ```bash
