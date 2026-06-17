@@ -6,6 +6,7 @@ import {
   getReplacements,
   getMndaTermText,
   getConfidentialityTermText,
+  getConfidentialityTermSuffix,
   parseSegments,
 } from '@/lib/mnda'
 
@@ -38,10 +39,7 @@ function Clause({ text, replacements }: { text: string; replacements: Record<str
 export default function MNDAHtmlPreview({ data }: { data: MNDAFormData }) {
   const replacements = getReplacements(data)
   const clauses = STANDARD_TERMS.split('\n\n').filter(Boolean)
-  const confTermSuffix =
-    data.confidentialityTermType === 'fixed'
-      ? ', but in the case of trade secrets until Confidential Information is no longer considered a trade secret under applicable laws'
-      : ''
+  const confTermSuffix = getConfidentialityTermSuffix(data)
 
   const signatureRows: [string, string, string][] = [
     ['Company', data.party1.company, data.party2.company],

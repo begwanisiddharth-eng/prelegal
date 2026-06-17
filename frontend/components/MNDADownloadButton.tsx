@@ -11,14 +11,17 @@ export default function MNDADownloadButton({ data }: { data: MNDAFormData }) {
 
   async function handleDownload() {
     setGenerating(true)
-    const blob = await pdf(<MNDAPdfDocument data={data} />).toBlob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'mutual-nda.pdf'
-    a.click()
-    URL.revokeObjectURL(url)
-    setGenerating(false)
+    try {
+      const blob = await pdf(<MNDAPdfDocument data={data} />).toBlob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'mutual-nda.pdf'
+      a.click()
+      setTimeout(() => URL.revokeObjectURL(url), 0)
+    } finally {
+      setGenerating(false)
+    }
   }
 
   return (

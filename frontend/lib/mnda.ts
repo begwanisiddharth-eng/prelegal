@@ -21,7 +21,7 @@ export interface MNDAFormData {
 
 export const defaultFormData: MNDAFormData = {
   purpose: 'Evaluating whether to enter into a business relationship with the other party.',
-  effectiveDate: new Date().toISOString().split('T')[0],
+  effectiveDate: new Date().toLocaleDateString('en-CA'),
   mndaTermType: 'fixed',
   mndaTermYears: '1',
   confidentialityTermType: 'fixed',
@@ -34,14 +34,21 @@ export const defaultFormData: MNDAFormData = {
 
 export function getMndaTermText(data: MNDAFormData): string {
   return data.mndaTermType === 'fixed'
-    ? `${data.mndaTermYears} year(s) from Effective Date`
+    ? `${data.mndaTermYears || '1'} year(s) from Effective Date`
     : 'the date of termination in accordance with the terms of the MNDA'
 }
 
 export function getConfidentialityTermText(data: MNDAFormData): string {
   return data.confidentialityTermType === 'fixed'
-    ? `${data.confidentialityTermYears} year(s) from Effective Date`
+    ? `${data.confidentialityTermYears || '1'} year(s) from Effective Date`
     : 'perpetuity'
+}
+
+/** Trade-secret carve-out appended to the Term of Confidentiality on the Cover Page (fixed term only). */
+export function getConfidentialityTermSuffix(data: MNDAFormData): string {
+  return data.confidentialityTermType === 'fixed'
+    ? ', but in the case of trade secrets until Confidential Information is no longer considered a trade secret under applicable laws'
+    : ''
 }
 
 export function getReplacements(data: MNDAFormData): Record<string, string> {

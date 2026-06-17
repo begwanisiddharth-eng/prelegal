@@ -14,6 +14,7 @@ import {
   getReplacements,
   getMndaTermText,
   getConfidentialityTermText,
+  getConfidentialityTermSuffix,
   parseSegments,
 } from '@/lib/mnda'
 
@@ -73,12 +74,12 @@ export default function MNDAPdfDocument({ data }: { data: MNDAFormData }) {
 
         <Text style={styles.sectionHeader}>Purpose</Text>
         <Text style={styles.label}>How Confidential Information may be used</Text>
-        <Text style={styles.value}>{data.purpose}</Text>
+        <Text style={styles.value}>{data.purpose || ' '}</Text>
 
         <View style={styles.row}>
           <View style={styles.col}>
             <Text style={styles.sectionHeader}>Effective Date</Text>
-            <Text style={styles.value}>{data.effectiveDate}</Text>
+            <Text style={styles.value}>{data.effectiveDate || ' '}</Text>
           </View>
           <View style={styles.col}>
             <Text style={styles.sectionHeader}>MNDA Term</Text>
@@ -89,9 +90,7 @@ export default function MNDAPdfDocument({ data }: { data: MNDAFormData }) {
         <Text style={styles.sectionHeader}>Term of Confidentiality</Text>
         <Text style={styles.value}>
           {getConfidentialityTermText(data)}
-          {data.confidentialityTermType === 'fixed'
-            ? ', but in the case of trade secrets until Confidential Information is no longer considered a trade secret under applicable laws'
-            : ''}
+          {getConfidentialityTermSuffix(data)}
         </Text>
 
         <View style={styles.row}>

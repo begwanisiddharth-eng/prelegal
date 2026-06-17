@@ -1,5 +1,6 @@
 'use client'
 
+import { useId } from 'react'
 import type { MNDAFormData, Party } from '@/lib/mnda'
 
 interface Props {
@@ -7,40 +8,48 @@ interface Props {
   onChange: (data: MNDAFormData) => void
 }
 
-function Label({ children }: { children: React.ReactNode }) {
-  return <label className="block text-xs font-medium text-gray-600 mb-1">{children}</label>
-}
-
 function Input({
+  label,
   value,
   onChange,
   placeholder,
   type = 'text',
 }: {
+  label: string
   value: string
   onChange: (v: string) => void
   placeholder?: string
   type?: string
 }) {
+  const id = useId()
   return (
-    <input
-      type={type}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900"
-    />
+    <div>
+      <label htmlFor={id} className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+      <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900"
+      />
+    </div>
   )
 }
 
-function Textarea({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function Textarea({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const id = useId()
   return (
-    <textarea
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      rows={3}
-      className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900 resize-none"
-    />
+    <div>
+      <label htmlFor={id} className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+      <textarea
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={3}
+        className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900 resize-none"
+      />
+    </div>
   )
 }
 
@@ -68,28 +77,13 @@ function PartyFields({
   return (
     <div className="space-y-2">
       <p className="text-xs font-semibold text-gray-500">{label}</p>
-      <div>
-        <Label>Company</Label>
-        <Input value={party.company} onChange={set('company')} placeholder="Acme Corp." />
-      </div>
+      <Input label="Company" value={party.company} onChange={set('company')} placeholder="Acme Corp." />
       <div className="grid grid-cols-2 gap-2">
-        <div>
-          <Label>Print Name</Label>
-          <Input value={party.printName} onChange={set('printName')} placeholder="Jane Smith" />
-        </div>
-        <div>
-          <Label>Title</Label>
-          <Input value={party.title} onChange={set('title')} placeholder="CEO" />
-        </div>
+        <Input label="Print Name" value={party.printName} onChange={set('printName')} placeholder="Jane Smith" />
+        <Input label="Title" value={party.title} onChange={set('title')} placeholder="CEO" />
       </div>
-      <div>
-        <Label>Notice Address (email or postal)</Label>
-        <Input value={party.noticeAddress} onChange={set('noticeAddress')} placeholder="jane@acme.com" />
-      </div>
-      <div>
-        <Label>Date</Label>
-        <Input type="date" value={party.date} onChange={set('date')} />
-      </div>
+      <Input label="Notice Address (email or postal)" value={party.noticeAddress} onChange={set('noticeAddress')} placeholder="jane@acme.com" />
+      <Input label="Date" type="date" value={party.date} onChange={set('date')} />
     </div>
   )
 }
@@ -101,14 +95,8 @@ export default function MNDAForm({ data, onChange }: Props) {
   return (
     <form className="p-6 space-y-0" onSubmit={(e) => e.preventDefault()}>
       <Section title="Agreement Terms">
-        <div>
-          <Label>Purpose</Label>
-          <Textarea value={data.purpose} onChange={set('purpose')} />
-        </div>
-        <div>
-          <Label>Effective Date</Label>
-          <Input type="date" value={data.effectiveDate} onChange={set('effectiveDate')} />
-        </div>
+        <Textarea label="Purpose" value={data.purpose} onChange={set('purpose')} />
+        <Input label="Effective Date" type="date" value={data.effectiveDate} onChange={set('effectiveDate')} />
       </Section>
 
       <Section title="MNDA Term">
@@ -116,6 +104,7 @@ export default function MNDAForm({ data, onChange }: Props) {
           <label className="flex items-center gap-2 text-sm cursor-pointer">
             <input
               type="radio"
+              name="mndaTermType"
               checked={data.mndaTermType === 'fixed'}
               onChange={() => onChange({ ...data, mndaTermType: 'fixed' })}
             />
@@ -133,6 +122,7 @@ export default function MNDAForm({ data, onChange }: Props) {
           <label className="flex items-center gap-2 text-sm cursor-pointer">
             <input
               type="radio"
+              name="mndaTermType"
               checked={data.mndaTermType === 'until-terminated'}
               onChange={() => onChange({ ...data, mndaTermType: 'until-terminated' })}
             />
@@ -146,6 +136,7 @@ export default function MNDAForm({ data, onChange }: Props) {
           <label className="flex items-center gap-2 text-sm cursor-pointer">
             <input
               type="radio"
+              name="confidentialityTermType"
               checked={data.confidentialityTermType === 'fixed'}
               onChange={() => onChange({ ...data, confidentialityTermType: 'fixed' })}
             />
@@ -162,6 +153,7 @@ export default function MNDAForm({ data, onChange }: Props) {
           <label className="flex items-center gap-2 text-sm cursor-pointer">
             <input
               type="radio"
+              name="confidentialityTermType"
               checked={data.confidentialityTermType === 'perpetuity'}
               onChange={() => onChange({ ...data, confidentialityTermType: 'perpetuity' })}
             />
@@ -171,18 +163,13 @@ export default function MNDAForm({ data, onChange }: Props) {
       </Section>
 
       <Section title="Governing Law & Jurisdiction">
-        <div>
-          <Label>Governing Law (state)</Label>
-          <Input value={data.governingLaw} onChange={set('governingLaw')} placeholder="Delaware" />
-        </div>
-        <div>
-          <Label>Jurisdiction</Label>
-          <Input
-            value={data.jurisdiction}
-            onChange={set('jurisdiction')}
-            placeholder="courts located in New Castle, DE"
-          />
-        </div>
+        <Input label="Governing Law (state)" value={data.governingLaw} onChange={set('governingLaw')} placeholder="Delaware" />
+        <Input
+          label="Jurisdiction"
+          value={data.jurisdiction}
+          onChange={set('jurisdiction')}
+          placeholder="courts located in New Castle, DE"
+        />
       </Section>
 
       <Section title="Party 1">
