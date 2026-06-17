@@ -4,7 +4,7 @@
 
 Next.js 16 (Turbopack), TypeScript, Tailwind CSS v4, `@react-pdf/renderer` v4.
 
-Entry point: `app/page.tsx`. It holds the form state (`formData`) and renders the form on the left and the preview on the right.
+Entry point: `app/page.tsx`. It holds the document state (`formData`) and renders an AI chat (`ChatPanel.tsx`) on the left and the preview on the right. The chat replaced the old manual form: it posts the conversation and current fields to the backend `POST /api/chat` (`lib/chat.ts`), which returns the assistant reply plus the updated fields that drive the preview.
 
 The right-hand preview is a live **HTML** rendering (`MNDAHtmlPreview.tsx`) that updates instantly on every keystroke. The actual PDF is generated only when the user clicks Download (`MNDADownloadButton.tsx`, via `pdf().toBlob()`), so `@react-pdf/renderer` never runs during editing. Do not reintroduce a live `<PDFViewer>` iframe for the preview — it reloads a new blob URL on every edit and flashes blank.
 

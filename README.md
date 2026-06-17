@@ -9,7 +9,8 @@ fields.
 In progress — expected completion 2026-06-23.
 
 Currently implemented: a fake login (dummy `demo` / `demo`) gating the Mutual
-NDA Creator, served by a FastAPI backend.
+NDA Creator, which is now driven by an AI chat that fills the document from a
+free-form conversation. Served by a FastAPI backend.
 
 ## Running the app
 
@@ -50,7 +51,7 @@ See [`frontend/TESTING.md`](frontend/TESTING.md) for the manual test checklist.
 
 - **Frontend**: Next.js 16, TypeScript, Tailwind CSS, `@react-pdf/renderer`
 - **Backend**: FastAPI + SQLAlchemy (SQLite), Python via `uv`
-- **AI**: LiteLLM against `groq/openai/gpt-oss-120b` (Groq), Structured Outputs (planned)
+- **AI**: LiteLLM against `groq/openai/gpt-oss-120b` (Groq), Structured Outputs
 
 ## Legal Templates
 

@@ -23,14 +23,15 @@ itself (see `playwright.config.ts`). First run needs the browser binary:
 - `lib/mnda.ts`: term/suffix text, placeholder replacement, `parseSegments`,
   and the default effective date using the **local** calendar day (regression
   for the UTC off-by-one).
-- `MNDAForm`: label/input association (`getByLabelText` resolves), radio groups
-  sharing a `name`, disabling the years input, and per-party state isolation.
+- `ChatPanel`: the greeting on mount, sending a message and showing the reply,
+  field updates flowing to the preview, and the error state on a failed request.
+- `lib/chat.ts`: posting to `/api/chat` and surfacing request failures.
 - `MNDAHtmlPreview`: live values, the trade-secret carve-out toggling with the
   confidentiality term, placeholder substitution, and the signature table.
 - `MNDADownloadButton`: PDF generation on click, the `mutual-nda.pdf` download
   wiring, idle-state reset after completion, and deferred object-URL revoke.
-- E2E: full page render, live preview updates while typing, carve-out toggle,
-  radio-group behaviour, and a real PDF download.
+- E2E: full page render, a chat answer updating the preview, the carve-out
+  toggle (both driven by a mocked `/api/chat`), and a real PDF download.
 
 ---
 
@@ -41,8 +42,15 @@ the start script). Sign in with `demo` / `demo` first — the creator is gated
 behind the login. These cover things the automated suite cannot assert (visual
 fidelity, real PDF output, accessibility, and OS-level behaviour).
 
+### Chat (needs the backend running with a valid `GROQ_API_KEY`)
+- [ ] The assistant greeting appears on load; typing an answer and sending gets
+      a relevant reply.
+- [ ] Answers populate the right-hand preview (e.g. mention a purpose, governing
+      law, or party names and watch the cover page update).
+- [ ] A backend/LLM failure shows the inline "Please try again" error.
+
 ### PDF output (open the downloaded file)
-- [ ] Click **Download PDF** with the default form; a `mutual-nda.pdf` opens.
+- [ ] Click **Download PDF**; a `mutual-nda.pdf` opens.
 - [ ] Cover Page shows Purpose, Effective Date, MNDA Term, Term of
       Confidentiality, Governing Law, Jurisdiction, and the signature table.
 - [ ] The downloaded PDF visually matches the on-screen HTML preview.
@@ -61,20 +69,18 @@ fidelity, real PDF output, accessibility, and OS-level behaviour).
       revoked cleanly).
 
 ### Live preview
-- [ ] Typing in any field updates the right-hand preview instantly with no
-      blank flash or flicker (no `<PDFViewer>` reload).
-- [ ] Switch MNDA Term to "Continues until terminated"; the years input
-      disables and the cover page text updates.
-- [ ] Switch Term of Confidentiality to "In perpetuity"; the trade-secret
+- [ ] As the chat fills fields, the right-hand preview updates with no blank
+      flash or flicker (no `<PDFViewer>` reload).
+- [ ] Tell the assistant the MNDA term "continues until terminated"; the cover
+      page text updates accordingly.
+- [ ] Tell the assistant confidentiality lasts "in perpetuity"; the trade-secret
       carve-out sentence disappears.
 
 ### Accessibility / keyboard
-- [ ] Click a field's label text; focus moves to that field (label association).
-- [ ] Tab through the whole form in a logical order.
-- [ ] In each radio group, focus one radio and use Up/Down arrow keys to move
-      between options (verifies the shared `name`).
-- [ ] Run a screen reader (NVDA/VoiceOver) and confirm each input announces its
-      label and each radio announces its group.
+- [ ] Tab to the message input and Send button in a logical order.
+- [ ] The message input has an accessible name ("Message").
+- [ ] Run a screen reader (NVDA/VoiceOver) and confirm the chat input and the
+      conversation are announced sensibly.
 
 ### Layout / responsiveness
 - [ ] At a narrow window width the two-pane layout remains usable.
