@@ -30,8 +30,8 @@ export default function LoginPage() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
       >
-        <h1 className="text-lg font-semibold text-gray-900">Sign in to Prelegal</h1>
-        <p className="mt-0.5 text-xs text-gray-500">Use demo / demo for now.</p>
+        <h1 className="text-lg font-semibold text-brand-navy">Sign in to Prelegal</h1>
+        <p className="mt-0.5 text-xs text-brand-gray">Use demo / demo for now.</p>
 
         <label className="mt-4 block text-sm text-gray-700">
           Username
@@ -40,7 +40,7 @@ export default function LoginPage() {
             value={username}
             onChange={(event) => setUsername(event.target.value)}
             autoComplete="username"
-            className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
           />
         </label>
 
@@ -51,7 +51,7 @@ export default function LoginPage() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             autoComplete="current-password"
-            className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
           />
         </label>
 
@@ -64,7 +64,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="mt-4 w-full rounded bg-gray-900 px-4 py-2 text-sm text-white disabled:bg-gray-400"
+          className="mt-4 w-full rounded bg-brand-purple px-4 py-2 text-sm text-white hover:bg-brand-purple/90 transition-colors disabled:bg-brand-purple/50"
         >
           {submitting ? 'Signing in...' : 'Sign in'}
         </button>

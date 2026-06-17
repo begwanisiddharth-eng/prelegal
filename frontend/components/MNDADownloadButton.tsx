@@ -28,7 +28,7 @@ export default function MNDADownloadButton({ data }: { data: MNDAFormData }) {
     <button
       onClick={handleDownload}
       disabled={generating}
-      className="self-end px-4 py-2 bg-gray-900 text-white text-sm rounded hover:bg-gray-700 transition-colors disabled:opacity-50"
+      className="px-4 py-2 bg-brand-purple text-white text-sm rounded hover:bg-brand-purple/90 transition-colors disabled:opacity-50"
     >
       {generating ? 'Preparing PDF...' : 'Download PDF'}
     </button>

@@ -89,12 +89,14 @@ the standard terms document by incorporation.
 
 ## Color Scheme
 
-Target brand palette (not yet applied — the frontend currently uses the Next.js
-default theme `#ffffff` / `#171717`):
+Brand palette, applied to the app chrome (headers, buttons, chat, login) as
+Tailwind tokens (`brand-navy`, `brand-blue`, etc.) defined in
+`frontend/app/globals.css`. The document preview keeps black/gray text to stay
+faithful to the generated PDF.
 
 - Accent Yellow: `#ecad0a`
-- Blue Primary: `#209dd7`
-- Purple Secondary: `#753991` (submit buttons)
+- Blue Primary: `#209dd7` (chat user bubbles, focus rings)
+- Purple Secondary: `#753991` (submit/download buttons)
 - Dark Navy: `#032147` (headings)
 - Gray Text: `#888888`
 
