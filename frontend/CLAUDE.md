@@ -13,7 +13,17 @@ All components are in `components/`. Shared types and template logic are in `lib
 ## Commands (run from this directory)
 
 ```bash
-npm run dev      # dev server on localhost:3000
-npm run build    # production build
-npm run start    # serve production build
+npm run dev        # dev server on localhost:3000
+npm run build      # production build
+npm run start      # serve production build
+npm test           # Vitest unit + component tests (once)
+npm run test:watch # Vitest in watch mode
+npm run test:e2e   # Playwright E2E (auto-starts the dev server)
 ```
+
+## Testing
+
+Unit/component tests use Vitest + Testing Library and live next to their
+subjects (`lib/*.test.ts`, `components/*.test.tsx`). End-to-end tests use
+Playwright in `e2e/`. The manual test checklist and a fuller description are in
+`TESTING.md`. First Playwright run: `npx playwright install chromium`.

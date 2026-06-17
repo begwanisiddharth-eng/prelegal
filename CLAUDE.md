@@ -38,8 +38,11 @@ The frontend lives in `frontend/`. All commands must be run from that directory.
 | Start dev server | `npm run dev` (or `scripts\start-dev.ps1`) |
 | Stop dev server | `scripts\stop-dev.ps1` |
 | Production build | `npm run build` |
+| Unit + component tests | `npm test` (Vitest) |
+| End-to-end tests | `npm run test:e2e` (Playwright) |
 
-Dev server runs at **http://localhost:3000**.
+Dev server runs at **http://localhost:3000**. Test layout and the manual test
+checklist are documented in `frontend/TESTING.md`.
 
 ### Using the scripts
 

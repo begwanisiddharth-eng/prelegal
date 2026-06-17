@@ -22,6 +22,17 @@ To stop the server:
 .\scripts\stop-dev.ps1
 ```
 
+## Testing
+
+From `frontend/`:
+
+```bash
+npm test          # unit + component tests (Vitest)
+npm run test:e2e  # end-to-end tests (Playwright)
+```
+
+See [`frontend/TESTING.md`](frontend/TESTING.md) for the manual test checklist.
+
 ## Stack
 
 - **Frontend**: Next.js 16, TypeScript, Tailwind CSS, `@react-pdf/renderer`
