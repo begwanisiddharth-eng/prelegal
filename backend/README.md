@@ -18,10 +18,13 @@ use the project-root start script, which builds the frontend first.
 - `GET /api/health` — liveness check.
 - `POST /api/login` `{username, password}` — validates against the `users`
   table (seeded with `demo` / `demo`). No real authentication yet.
-- `POST /api/chat` `{messages, fields}` — sends the conversation to the LLM
-  (LiteLLM → Groq `gpt-oss-120b`, Structured Outputs) and returns the assistant
-  reply plus the updated MNDA fields. Stateless. Requires `GROQ_API_KEY` in the
-  project-root `.env`.
+- `GET /api/catalog` — the 11 selectable document types (cover-page entry excluded).
+- `GET /api/templates/{filename}` — a template's markdown plus its parsed
+  placeholder list (`<span class="*_link">Name</span>` fields).
+- `POST /api/chat` `{messages, document, fields}` — sends the conversation to the
+  LLM (LiteLLM → Groq `gpt-oss-120b`, JSON mode + Pydantic validation) and returns
+  the assistant reply, the chosen document, and the updated fields. Stateless.
+  Requires `GROQ_API_KEY` in the project-root `.env`.
 
 ## Database
 

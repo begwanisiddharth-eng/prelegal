@@ -1,103 +1,119 @@
-"""LLM-backed chat that gathers Mutual NDA fields via free-form conversation."""
+"""LLM-backed chat that picks a document and fills its placeholders by conversation."""
 
-from typing import Literal
+import json
 
 import litellm
 from litellm import completion
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+
+from app.templates import load_catalog, parse_placeholders, read_template
 
 MODEL = "groq/openai/gpt-oss-120b"
 
 
-@retry(
-    reraise=True,
-    stop=stop_after_attempt(5),
-    wait=wait_exponential(multiplier=2, min=4, max=64),
-    retry=retry_if_exception_type((litellm.RateLimitError, litellm.ServiceUnavailableError)),
-)
-def completion_with_backoff(**kwargs):
-    kwargs.setdefault("allowed_openai_params", ["reasoning_effort"])
-    return completion(**kwargs)
+class MalformedResponse(Exception):
+    """The model did not return a JSON object matching ChatResponse."""
 
 
-class Party(BaseModel):
-    printName: str = ""
-    title: str = ""
-    company: str = ""
-    noticeAddress: str = ""
-    date: str = ""
-
-
-class MNDAFields(BaseModel):
-    """The Mutual NDA fields, mirroring the frontend's MNDAFormData."""
-
-    purpose: str = ""
-    effectiveDate: str = ""
-    mndaTermType: Literal["fixed", "until-terminated"] = "fixed"
-    mndaTermYears: str = ""
-    confidentialityTermType: Literal["fixed", "perpetuity"] = "fixed"
-    confidentialityTermYears: str = ""
-    governingLaw: str = ""
-    jurisdiction: str = ""
-    party1: Party = Field(default_factory=Party)
-    party2: Party = Field(default_factory=Party)
+class FieldValue(BaseModel):
+    name: str
+    value: str
 
 
 class ChatMessage(BaseModel):
-    role: Literal["user", "assistant"]
+    role: str
     content: str
 
 
 class ChatRequest(BaseModel):
     messages: list[ChatMessage]
-    fields: MNDAFields = Field(default_factory=MNDAFields)
+    document: str = ""
+    fields: list[FieldValue] = Field(default_factory=list)
 
 
 class ChatResponse(BaseModel):
     reply: str
-    fields: MNDAFields
+    document: str
+    fields: list[FieldValue]
 
 
-SYSTEM_PROMPT = """You are an assistant that helps a user complete a Common Paper Mutual \
-Non-Disclosure Agreement (MNDA) through a friendly, free-form conversation. Only this one \
-document type is supported.
+SYSTEM_PROMPT = """You help a user create a legal document by chatting with them. \
+Only the documents in the provided catalog can be generated.
 
-Gather these fields, asking about a few at a time in natural language (never dump a form):
-- purpose: the business purpose for sharing confidential information
-- effectiveDate: when the agreement takes effect (YYYY-MM-DD)
-- mndaTermType: "fixed" (a set number of years) or "until-terminated"
-- mndaTermYears: the number of years, when the term is fixed
-- confidentialityTermType: "fixed" or "perpetuity"
-- confidentialityTermYears: the number of years, when fixed
-- governingLaw: the US state whose law governs the agreement
-- jurisdiction: the courts/location where disputes are handled
-- party1 and party2, each with: printName, title, company, noticeAddress, date
+Choosing the document:
+- If the user asks for a document that is not in the catalog, explain you can't generate \
+that one, suggest the closest catalog document (judging by the names and descriptions), and \
+ask if they want to proceed with it. Do not pick a document until the user settles on one.
+- When the user settles on a supported document, set `document` to that catalog filename. In \
+the SAME reply, confirm the document, tell the user you'll now ask about its fields one at a \
+time, mention they can say "generate as-is" at any point to finish with what's filled so far, \
+and ask the FIRST field question.
 
-Rules:
-- Always return the complete `fields` object, preserving every value already gathered (the \
-current known values are given to you). Only change a field when the user supplies or revises it.
-- Leave unknown text fields as empty strings; keep the enum fields at their current values \
-until the user decides.
-- Keep `reply` short and conversational: acknowledge what you captured, then ask the next question.
-- Use YYYY-MM-DD for all dates.
-- When every field is filled, tell the user the NDA is complete and ready to download."""
+Filling fields (once a document is chosen):
+- Ask about the placeholders that are still empty, MOST IMPORTANT FIRST (you decide the \
+importance; cover-page / key commercial terms and party names first), so that if the user \
+stops early the important fields are already filled.
+- Every reply must contain exactly one question until all fields are filled or the user opts \
+out, then confirm the document is ready to download (and ask nothing further).
+- Some placeholders are grammatical variants of the same thing (for example "Customer" and \
+"Customer's"); ask about them once and fill all the variants consistently.
+- Only use field names from the provided placeholder list. Always return ALL known fields in \
+`fields` as name/value pairs, preserving values already gathered; leave the rest out.
+
+Always keep `document` set to the current filename once chosen (echo it back every turn).
+
+Respond with ONLY a JSON object (no text outside it) of exactly this shape:
+{"reply": "<your message to the user>", "document": "<chosen catalog filename, or empty \
+string if none chosen yet>", "fields": [{"name": "<placeholder name>", "value": "<value>"}]}"""
+
+
+def _context_message(document: str, fields: list[FieldValue]) -> str:
+    catalog = load_catalog()
+    lines = ["Catalog of supported documents (name -- filename -- description):"]
+    for entry in catalog:
+        lines.append(f"- {entry['name']} -- {entry['filename']} -- {entry['description']}")
+
+    if document:
+        placeholders = parse_placeholders(read_template(document))
+        known = {f.name: f.value for f in fields}
+        lines.append(f"\nChosen document: {document}")
+        lines.append(f"Placeholders to fill: {json.dumps(placeholders)}")
+        lines.append(f"Current field values: {json.dumps(known)}")
+    else:
+        lines.append("\nNo document chosen yet.")
+    return "\n".join(lines)
+
+
+@retry(
+    reraise=True,
+    stop=stop_after_attempt(4),
+    wait=wait_exponential(multiplier=2, min=2, max=32),
+    retry=retry_if_exception_type(
+        (litellm.RateLimitError, litellm.ServiceUnavailableError, MalformedResponse)
+    ),
+)
+def _complete(messages: list[dict]) -> ChatResponse:
+    """Call the model in JSON mode and validate it against ChatResponse, retrying on failure."""
+    response = completion(
+        model=MODEL,
+        messages=messages,
+        response_format={"type": "json_object"},
+        reasoning_effort="high",
+        allowed_openai_params=["reasoning_effort"],
+    )
+    content = response.choices[0].message.content
+    try:
+        return ChatResponse.model_validate_json(content)
+    except ValidationError as error:
+        raise MalformedResponse(str(error))
 
 
 def run_chat(request: ChatRequest) -> ChatResponse:
-    """Send the conversation to the model and return its reply plus updated fields."""
+    """Send the conversation to the model and return its reply, document, and fields."""
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {
-            "role": "system",
-            "content": f"Current known field values (JSON): {request.fields.model_dump_json()}",
-        },
+        {"role": "system", "content": _context_message(request.document, request.fields)},
         *({"role": m.role, "content": m.content} for m in request.messages),
     ]
-    response = completion_with_backoff(
-        model=MODEL,
-        messages=messages,
-        response_format=ChatResponse,
-        reasoning_effort="high",
-    )
-    return ChatResponse.model_validate_json(response.choices[0].message.content)
+    return _complete(messages)

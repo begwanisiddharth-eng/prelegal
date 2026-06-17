@@ -1,18 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import { sendChat, type ChatMessage } from '@/lib/chat'
-import type { MNDAFormData } from '@/lib/mnda'
+import { sendChat, type ChatMessage, type FieldValue } from '@/lib/chat'
 
-const GREETING =
-  "Hi! I'll help you put together a Mutual NDA. To start, what's the purpose of sharing confidential information, and who are the two parties?"
+const GREETING = "Hi! I can help you draft a legal document. What kind of document do you need?"
 
 export default function ChatPanel({
-  data,
-  onChange,
+  document,
+  fields,
+  onResult,
 }: {
-  data: MNDAFormData
-  onChange: (data: MNDAFormData) => void
+  document: string
+  fields: FieldValue[]
+  onResult: (document: string, fields: FieldValue[]) => void
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: 'assistant', content: GREETING },
@@ -32,9 +32,9 @@ export default function ChatPanel({
     setBusy(true)
     setError(false)
     try {
-      const result = await sendChat(next, data)
+      const result = await sendChat(next, document, fields)
       setMessages([...next, { role: 'assistant', content: result.reply }])
-      onChange(result.fields)
+      onResult(result.document, result.fields)
     } catch {
       setError(true)
     } finally {

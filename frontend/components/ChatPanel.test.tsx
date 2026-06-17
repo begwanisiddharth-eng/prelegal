@@ -2,7 +2,6 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ChatPanel from './ChatPanel'
-import { defaultFormData, type MNDAFormData } from '@/lib/mnda'
 
 describe('ChatPanel', () => {
   beforeEach(() => {
@@ -10,30 +9,36 @@ describe('ChatPanel', () => {
   })
 
   it('shows the assistant greeting on mount', () => {
-    render(<ChatPanel data={defaultFormData} onChange={() => {}} />)
-    expect(screen.getByText(/help you put together a Mutual NDA/)).toBeInTheDocument()
+    render(<ChatPanel document="" fields={[]} onResult={() => {}} />)
+    expect(screen.getByText(/help you draft a legal document/)).toBeInTheDocument()
   })
 
-  it('sends a message, shows the reply, and updates fields', async () => {
-    const updated: MNDAFormData = { ...defaultFormData, governingLaw: 'Delaware' }
+  it('sends a message, shows the reply, and reports the result', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => new Response(JSON.stringify({ reply: 'Got it.', fields: updated }), { status: 200 })),
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({ reply: 'Got it.', document: 'Mutual-NDA.md', fields: [{ name: 'Purpose', value: 'X' }] }),
+            { status: 200 },
+          ),
+      ),
     )
-    const onChange = vi.fn()
-    render(<ChatPanel data={defaultFormData} onChange={onChange} />)
+    const onResult = vi.fn()
+    render(<ChatPanel document="" fields={[]} onResult={onResult} />)
 
-    await userEvent.type(screen.getByLabelText('Message'), 'Use Delaware law')
+    await userEvent.type(screen.getByLabelText('Message'), 'I need an NDA')
     await userEvent.click(screen.getByRole('button', { name: 'Send' }))
 
     expect(await screen.findByText('Got it.')).toBeInTheDocument()
-    expect(screen.getByText('Use Delaware law')).toBeInTheDocument()
-    await waitFor(() => expect(onChange).toHaveBeenCalledWith(updated))
+    await waitFor(() =>
+      expect(onResult).toHaveBeenCalledWith('Mutual-NDA.md', [{ name: 'Purpose', value: 'X' }]),
+    )
   })
 
   it('shows an error when the request fails', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('no', { status: 500 })))
-    render(<ChatPanel data={defaultFormData} onChange={() => {}} />)
+    render(<ChatPanel document="" fields={[]} onResult={() => {}} />)
 
     await userEvent.type(screen.getByLabelText('Message'), 'hello')
     await userEvent.click(screen.getByRole('button', { name: 'Send' }))

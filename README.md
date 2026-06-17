@@ -8,9 +8,10 @@ fields.
 
 In progress — expected completion 2026-06-23.
 
-Currently implemented: a fake login (dummy `demo` / `demo`) gating the Mutual
-NDA Creator, which is now driven by an AI chat that fills the document from a
-free-form conversation. Served by a FastAPI backend.
+Currently implemented: a fake login (dummy `demo` / `demo`) gating an AI chat
+that lets the user pick any of the 11 catalog document types and fills it from a
+free-form conversation, with a live preview and PDF download. Served by a
+FastAPI backend.
 
 ## Running the app
 

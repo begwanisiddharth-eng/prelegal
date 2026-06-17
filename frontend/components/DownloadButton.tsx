@@ -2,21 +2,28 @@
 
 import { useState } from 'react'
 import { pdf } from '@react-pdf/renderer'
-import MNDAPdfDocument from './MNDAPdfDocument'
-import type { MNDAFormData } from '@/lib/mnda'
+import TemplatePdfDocument from './TemplatePdfDocument'
 
 /** Generates the PDF on click only, so react-pdf never runs during editing. */
-export default function MNDADownloadButton({ data }: { data: MNDAFormData }) {
+export default function DownloadButton({
+  markdown,
+  fields,
+  filename,
+}: {
+  markdown: string
+  fields: Record<string, string>
+  filename: string
+}) {
   const [generating, setGenerating] = useState(false)
 
   async function handleDownload() {
     setGenerating(true)
     try {
-      const blob = await pdf(<MNDAPdfDocument data={data} />).toBlob()
+      const blob = await pdf(<TemplatePdfDocument markdown={markdown} fields={fields} />).toBlob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'mutual-nda.pdf'
+      a.download = filename
       a.click()
       setTimeout(() => URL.revokeObjectURL(url), 0)
     } finally {
