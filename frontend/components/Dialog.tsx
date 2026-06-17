@@ -1,11 +1,34 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 
-function Backdrop({ children }: { children: React.ReactNode }) {
+function Backdrop({
+  titleId,
+  onEscape,
+  children,
+}: {
+  titleId: string
+  onEscape: () => void
+  children: React.ReactNode
+}) {
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') onEscape()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onEscape])
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-lg">{children}</div>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="w-full max-w-sm rounded-lg bg-white p-6 shadow-lg"
+      >
+        {children}
+      </div>
     </div>
   )
 }
@@ -30,9 +53,10 @@ export function ConfirmDialog({
   onConfirm: () => void
   onCancel: () => void
 }) {
+  const titleId = useId()
   return (
-    <Backdrop>
-      <h2 className="text-base font-semibold text-brand-navy">{title}</h2>
+    <Backdrop titleId={titleId} onEscape={onCancel}>
+      <h2 id={titleId} className="text-base font-semibold text-brand-navy">{title}</h2>
       <p className="mt-2 text-sm text-gray-600">{message}</p>
       <div className="mt-5 flex justify-end gap-2">
         <button onClick={onCancel} className={secondaryButton}>{cancelLabel}</button>
@@ -53,9 +77,10 @@ export function NoticeDialog({
   okLabel?: string
   onOk: () => void
 }) {
+  const titleId = useId()
   return (
-    <Backdrop>
-      <h2 className="text-base font-semibold text-brand-navy">{title}</h2>
+    <Backdrop titleId={titleId} onEscape={onOk}>
+      <h2 id={titleId} className="text-base font-semibold text-brand-navy">{title}</h2>
       <p className="mt-2 text-sm text-gray-600">{message}</p>
       <div className="mt-5 flex justify-end">
         <button onClick={onOk} className={primaryButton}>{okLabel}</button>
@@ -80,9 +105,10 @@ export function PromptDialog({
   onCancel: () => void
 }) {
   const [value, setValue] = useState(initialValue)
+  const titleId = useId()
   return (
-    <Backdrop>
-      <h2 className="text-base font-semibold text-brand-navy">{title}</h2>
+    <Backdrop titleId={titleId} onEscape={onCancel}>
+      <h2 id={titleId} className="text-base font-semibold text-brand-navy">{title}</h2>
       <label className="mt-3 block text-sm text-gray-700">
         {label}
         <input

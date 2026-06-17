@@ -12,7 +12,7 @@ export default function ChatPanel({
 }: {
   document: string
   fields: FieldValue[]
-  onResult: (document: string, fields: FieldValue[]) => void
+  onResult: (document: string, fields: FieldValue[]) => void | Promise<void>
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: 'assistant', content: GREETING },
@@ -41,7 +41,7 @@ export default function ChatPanel({
     try {
       const result = await sendChat(next, document, fields)
       setMessages([...next, { role: 'assistant', content: result.reply }])
-      onResult(result.document, result.fields)
+      await onResult(result.document, result.fields)
     } catch {
       setError(true)
     } finally {

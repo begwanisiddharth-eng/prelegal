@@ -4,10 +4,7 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 
-
-def auth_headers(client: TestClient, username: str, password: str = "pw") -> dict:
-    token = client.post("/api/signup", json={"username": username, "password": password}).json()["token"]
-    return {"Authorization": f"Bearer {token}"}
+# auth_headers is provided as a fixture in conftest.py.
 
 
 def test_health():
@@ -41,7 +38,7 @@ def test_documents_require_authentication():
     assert response.status_code == 401
 
 
-def test_document_create_list_update_roundtrip():
+def test_document_create_list_update_roundtrip(auth_headers):
     with TestClient(app) as client:
         headers = auth_headers(client, "bob")
         created = client.post(
@@ -66,7 +63,7 @@ def test_document_create_list_update_roundtrip():
         assert updated.json()["fields"][0]["value"] == "Y"
 
 
-def test_documents_are_isolated_per_user():
+def test_documents_are_isolated_per_user(auth_headers):
     with TestClient(app) as client:
         carol = auth_headers(client, "carol")
         dave = auth_headers(client, "dave")
@@ -82,7 +79,7 @@ def test_documents_are_isolated_per_user():
     assert blocked.status_code == 404
 
 
-def test_logout_invalidates_the_token():
+def test_logout_invalidates_the_token(auth_headers):
     with TestClient(app) as client:
         headers = auth_headers(client, "erin")
         assert client.get("/api/documents", headers=headers).status_code == 200

@@ -14,6 +14,14 @@ describe('dialogs', () => {
     expect(onConfirm).toHaveBeenCalled()
   })
 
+  it('ConfirmDialog closes on Escape', async () => {
+    const onCancel = vi.fn()
+    render(<ConfirmDialog title="T" message="M" onConfirm={() => {}} onCancel={onCancel} />)
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    await userEvent.keyboard('{Escape}')
+    expect(onCancel).toHaveBeenCalled()
+  })
+
   it('NoticeDialog fires OK', async () => {
     const onOk = vi.fn()
     render(<NoticeDialog title="T" message="M" onOk={onOk} />)

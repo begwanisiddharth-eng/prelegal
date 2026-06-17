@@ -9,10 +9,7 @@ from app import chat as chat_module
 from app.chat import SYSTEM_PROMPT
 from app.main import app
 
-
-def auth_headers(client: TestClient, username: str) -> dict:
-    token = client.post("/api/signup", json={"username": username, "password": "pw"}).json()["token"]
-    return {"Authorization": f"Bearer {token}"}
+# auth_headers is provided as a fixture in conftest.py.
 
 
 def test_prompt_forbids_filenames_and_mentions_pdf():
@@ -37,7 +34,7 @@ def test_chat_requires_authentication():
     assert response.status_code == 401
 
 
-def test_chat_returns_reply_document_and_fields(monkeypatch):
+def test_chat_returns_reply_document_and_fields(monkeypatch, auth_headers):
     monkeypatch.setattr(chat_module, "completion", fake_completion)
     with TestClient(app) as client:
         response = client.post(
@@ -51,7 +48,7 @@ def test_chat_returns_reply_document_and_fields(monkeypatch):
     assert body["fields"][0]["name"] == "Purpose"
 
 
-def test_chat_rejects_unknown_document(monkeypatch):
+def test_chat_rejects_unknown_document(monkeypatch, auth_headers):
     monkeypatch.setattr(chat_module, "completion", fake_completion)
     with TestClient(app) as client:
         response = client.post(
@@ -62,7 +59,7 @@ def test_chat_rejects_unknown_document(monkeypatch):
     assert response.status_code == 400
 
 
-def test_chat_sends_catalog_and_placeholders(monkeypatch):
+def test_chat_sends_catalog_and_placeholders(monkeypatch, auth_headers):
     captured = {}
 
     def capture(**kwargs):

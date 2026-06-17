@@ -2,6 +2,7 @@
 
 import json
 import re
+from functools import lru_cache
 
 from app.config import PROJECT_ROOT
 
@@ -16,8 +17,10 @@ COVERPAGE_FILENAMES = {"Mutual-NDA-coverpage.md"}
 PLACEHOLDER_RE = re.compile(r'<span class="[a-z]+_link">(.*?)</span>')
 
 
+@lru_cache(maxsize=1)
 def load_catalog() -> list[dict]:
-    """Return the selectable documents (cover-page entries excluded)."""
+    """Return the selectable documents (cover-page entries excluded). Cached; the
+    catalog is static, so changes require a restart."""
     entries = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
     return [entry for entry in entries if entry["filename"] not in COVERPAGE_FILENAMES]
 

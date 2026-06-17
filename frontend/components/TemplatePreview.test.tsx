@@ -10,4 +10,19 @@ describe('TemplatePreview', () => {
     expect(screen.getByText('Acme')).toBeInTheDocument()
     expect(container.textContent).toContain('agrees')
   })
+
+  it('renders an empty blank (not the field name) when a placeholder is unfilled', () => {
+    const markdown = 'Hi <span class="orderform_link">Customer</span>.'
+    const { container } = render(<TemplatePreview markdown={markdown} fields={{}} />)
+    expect(container.textContent).not.toContain('Customer')
+  })
+
+  it('renders tables, list items, and bold text', () => {
+    const markdown = '| A | B |\n|---|---|\n| 1 | 2 |\n\n- Item one\n\nSome **bold** word.'
+    const { container } = render(<TemplatePreview markdown={markdown} fields={{}} />)
+    expect(container.querySelector('table')).toBeTruthy()
+    expect(screen.getByText('A')).toBeInTheDocument()
+    expect(screen.getByText('Item one')).toBeInTheDocument()
+    expect(container.querySelector('strong')?.textContent).toBe('bold')
+  })
 })
