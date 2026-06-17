@@ -51,9 +51,9 @@ export default function MNDAHtmlPreview({ data }: { data: MNDAFormData }) {
   ]
 
   return (
-    <div className="flex-1 overflow-y-auto rounded border border-gray-200 bg-gray-100 p-6 space-y-6">
+    <div className="flex-1 overflow-y-auto bg-gray-100 p-3 space-y-4">
       {/* Cover Page */}
-      <div className="mx-auto max-w-[640px] bg-white shadow-sm p-12">
+      <div className="mx-auto max-w-[820px] bg-white shadow-sm p-10">
         <h2 className="text-center text-lg font-bold">Mutual Non-Disclosure Agreement</h2>
         <p className="text-center text-sm font-bold mb-6">Cover Page</p>
 
@@ -103,7 +103,7 @@ export default function MNDAHtmlPreview({ data }: { data: MNDAFormData }) {
       </div>
 
       {/* Standard Terms */}
-      <div className="mx-auto max-w-[640px] bg-white shadow-sm p-12">
+      <div className="mx-auto max-w-[820px] bg-white shadow-sm p-10">
         <h2 className="text-center text-lg font-bold mb-3">Standard Terms</h2>
         <hr className="border-gray-300 mb-4" />
         {clauses.map((clause, i) => (

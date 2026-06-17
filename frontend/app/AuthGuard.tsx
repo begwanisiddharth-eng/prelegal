@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { isLoggedIn, logout } from '@/lib/auth'
+import { isLoggedIn } from '@/lib/auth'
 
 /** Gates every page behind the login flag, redirecting to /login when absent. */
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -22,20 +22,5 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (!ready) return null
 
-  return (
-    <>
-      {!onLoginPage && (
-        <button
-          onClick={() => {
-            logout()
-            router.replace('/login')
-          }}
-          className="fixed bottom-4 right-4 z-50 rounded bg-gray-800 px-3 py-1.5 text-xs text-white shadow hover:bg-gray-700"
-        >
-          Log out
-        </button>
-      )}
-      {children}
-    </>
-  )
+  return <>{children}</>
 }

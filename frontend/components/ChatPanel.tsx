@@ -50,7 +50,7 @@ export default function ChatPanel({
             <span
               className={
                 'inline-block rounded-lg px-3 py-2 text-sm ' +
-                (message.role === 'user' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900')
+                (message.role === 'user' ? 'bg-brand-blue text-white' : 'bg-gray-100 text-brand-navy')
               }
             >
               {message.content}
@@ -71,12 +71,12 @@ export default function ChatPanel({
           onChange={(event) => setInput(event.target.value)}
           placeholder="Type your answer..."
           aria-label="Message"
-          className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
+          className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
         />
         <button
           type="submit"
           disabled={busy}
-          className="rounded bg-gray-900 px-4 py-2 text-sm text-white disabled:bg-gray-400"
+          className="rounded bg-brand-purple px-4 py-2 text-sm text-white hover:bg-brand-purple/90 transition-colors disabled:bg-brand-purple/50"
         >
           Send
         </button>
