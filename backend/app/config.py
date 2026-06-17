@@ -20,10 +20,6 @@ DATABASE_URL = f"sqlite:///{DB_PATH}"
 # only when present, so the API can run without a frontend build (e.g. tests).
 FRONTEND_DIR = Path(os.getenv("PRELEGAL_FRONTEND_DIR", PROJECT_ROOT / "frontend" / "out"))
 
-# Credentials seeded for the default demo login.
-SEED_USERNAME = os.getenv("PRELEGAL_SEED_USER", "demo")
-SEED_PASSWORD = os.getenv("PRELEGAL_SEED_PASSWORD", "demo")
-
 # Allowed CORS origins (comma-separated) for the cross-origin dev frontend.
 CORS_ORIGINS = os.getenv("PRELEGAL_CORS_ORIGINS", "http://localhost:3000").split(",")
 

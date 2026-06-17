@@ -12,7 +12,7 @@ Currently implemented: multi-user accounts (sign up / sign in, bcrypt + token
 sessions) gating an AI chat that lets the user pick any of the 11 catalog
 document types and fills it from a free-form conversation, with a live preview,
 PDF download, and per-user saved documents. Served by a FastAPI backend with a
-persistent SQLite database. A seeded `demo` / `demo` account is available.
+persistent SQLite database.
 
 ## Running the app
 
@@ -23,8 +23,8 @@ Use the script for your platform:
 .\scripts\start-windows.ps1   # macOS/Linux: scripts/start-mac.sh or start-linux.sh
 ```
 
-Then open [http://localhost:8000](http://localhost:8000) and sign in with
-`demo` / `demo`.
+Then open [http://localhost:8000](http://localhost:8000) and create an account
+via the sign-up link, then sign in.
 
 To stop the server:
 

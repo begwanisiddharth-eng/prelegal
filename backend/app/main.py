@@ -18,18 +18,9 @@ from app.models import AuthSession, SavedDocument, User, now_iso
 from app.templates import catalog_filenames, load_catalog, parse_placeholders, read_template
 
 
-def seed_user() -> None:
-    """Insert the demo user if it is not already present."""
-    with SessionLocal() as db:
-        if db.scalar(select(User).where(User.username == config.SEED_USERNAME)) is None:
-            db.add(User(username=config.SEED_USERNAME, password_hash=hash_password(config.SEED_PASSWORD)))
-            db.commit()
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
-    seed_user()
     yield
 
 

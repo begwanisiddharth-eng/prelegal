@@ -1,7 +1,7 @@
 # prelegal — backend
 
-FastAPI + SQLAlchemy backend. Serves the dummy-login API and the statically
-exported frontend.
+FastAPI + SQLAlchemy backend. Provides auth (bcrypt + token sessions), per-user
+saved documents, the AI chat, and serves the statically exported frontend.
 
 ## Run
 
@@ -18,8 +18,7 @@ use the project-root start script, which builds the frontend first.
 - `GET /api/health` — liveness check.
 - `POST /api/signup` `{username, password}` — create an account (bcrypt-hashed);
   returns a session token. Duplicate usernames return 409.
-- `POST /api/login` `{username, password}` — returns a session token. A `demo` /
-  `demo` account is seeded.
+- `POST /api/login` `{username, password}` — returns a session token.
 - `POST /api/logout` — invalidates the caller's token.
 - `GET/POST/PUT /api/documents` — per-user saved documents (auth required via
   `Authorization: Bearer <token>`); each user sees only their own.

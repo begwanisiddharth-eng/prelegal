@@ -23,12 +23,13 @@ def test_signup_returns_token_and_rejects_duplicates():
     assert duplicate.status_code == 409
 
 
-def test_login_with_seeded_demo_user():
+def test_login_returns_token_for_valid_credentials():
     with TestClient(app) as client:
-        ok = client.post("/api/login", json={"username": "demo", "password": "demo"})
+        client.post("/api/signup", json={"username": "frank", "password": "pw"})
+        ok = client.post("/api/login", json={"username": "frank", "password": "pw"})
         assert ok.status_code == 200
         assert ok.json()["token"]
-        bad = client.post("/api/login", json={"username": "demo", "password": "nope"})
+        bad = client.post("/api/login", json={"username": "frank", "password": "nope"})
     assert bad.status_code == 401
 
 

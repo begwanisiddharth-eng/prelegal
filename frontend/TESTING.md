@@ -38,8 +38,8 @@ itself (see `playwright.config.ts`). First run needs the browser binary:
 ## Manual test checklist
 
 Run `npm run dev` and open http://localhost:3000 (or the full app on :8000 via
-the start script). Sign in with `demo` / `demo`, or create a new account via the
-sign-up link. These cover things the automated suite cannot assert (visual
+the start script). Create an account via the sign-up link, then sign in. These
+cover things the automated suite cannot assert (visual
 fidelity, real PDF output, accessibility, and OS-level behaviour).
 
 ### Accounts & navigation

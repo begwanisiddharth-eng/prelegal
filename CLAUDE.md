@@ -115,8 +115,8 @@ faithful to the generated PDF.
 ### Implemented PL-4
 
 - Backend in `backend/` (FastAPI + SQLAlchemy, `uv` project): `GET /api/health`
-  and `POST /api/login`, which validates against a temporary SQLite `users`
-  table seeded with a dummy `demo` / `demo` user. No real authentication yet.
+  and `POST /api/login`, which validated against a temporary SQLite `users`
+  table with a dummy login (no real authentication yet — superseded by PL-7).
 - Frontend configured for static export and served by FastAPI on :8000. A login
   page posts to `/api/login`; a client-side flag (`AuthGuard`) gates the MNDA
   Creator, which is otherwise unchanged.
