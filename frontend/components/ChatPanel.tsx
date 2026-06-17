@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { sendChat, type ChatMessage, type FieldValue } from '@/lib/chat'
 
 const GREETING = "Hi! I can help you draft a legal document. What kind of document do you need?"
@@ -20,6 +20,13 @@ export default function ChatPanel({
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Keep the conversation pinned to the latest message.
+  useEffect(() => {
+    const el = scrollRef.current
+    if (el) el.scrollTop = el.scrollHeight
+  }, [messages, busy])
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -44,7 +51,7 @@ export default function ChatPanel({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
         {messages.map((message, index) => (
           <div key={index} className={message.role === 'user' ? 'text-right' : 'text-left'}>
             <span

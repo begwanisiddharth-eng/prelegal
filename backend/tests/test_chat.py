@@ -6,7 +6,14 @@ from types import SimpleNamespace
 from fastapi.testclient import TestClient
 
 from app import chat as chat_module
+from app.chat import SYSTEM_PROMPT
 from app.main import app
+
+
+def test_prompt_forbids_filenames_and_mentions_pdf():
+    assert ".md" in SYSTEM_PROMPT  # the rule explicitly names the extension to avoid
+    assert "filename" in SYSTEM_PROMPT.lower()
+    assert "PDF" in SYSTEM_PROMPT
 
 
 def fake_completion(**kwargs):

@@ -41,6 +41,11 @@ class ChatResponse(BaseModel):
 SYSTEM_PROMPT = """You help a user create a legal document by chatting with them. \
 Only the documents in the provided catalog can be generated.
 
+Always refer to a document by its catalog NAME (for example "Partnership Agreement"). \
+Never mention filenames, file extensions, ".md", or the word "template" in your replies. \
+The `document` field carries the filename for internal use only. The finished document is \
+delivered to the user as a downloadable PDF.
+
 Choosing the document:
 - If the user asks for a document that is not in the catalog, explain you can't generate \
 that one, suggest the closest catalog document (judging by the names and descriptions), and \
