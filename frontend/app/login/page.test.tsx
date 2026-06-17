@@ -17,7 +17,7 @@ describe('LoginPage', () => {
   })
 
   it('logs in and redirects home on success', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response('{"ok":true}', { status: 200 })))
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('{"token":"t"}', { status: 200 })))
     render(<LoginPage />)
     await userEvent.type(screen.getByLabelText('Username'), 'demo')
     await userEvent.type(screen.getByLabelText('Password'), 'demo')

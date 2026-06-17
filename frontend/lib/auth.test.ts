@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { isLoggedIn, login, logout } from './auth'
+import { authHeaders, getToken, isLoggedIn, login, logout, signup } from './auth'
 
 describe('auth', () => {
   beforeEach(() => {
@@ -11,21 +11,38 @@ describe('auth', () => {
     expect(isLoggedIn()).toBe(false)
   })
 
-  it('sets the flag on a successful login', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response('{"ok":true}', { status: 200 })))
+  it('login stores the token and builds auth headers', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ token: 't1' }), { status: 200 })))
     expect(await login('demo', 'demo')).toBe(true)
+    expect(getToken()).toBe('t1')
     expect(isLoggedIn()).toBe(true)
+    expect(authHeaders()).toEqual({ Authorization: 'Bearer t1' })
   })
 
-  it('does not set the flag when login fails', async () => {
+  it('login returns false on bad credentials', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('no', { status: 401 })))
-    expect(await login('demo', 'bad')).toBe(false)
+    expect(await login('demo', 'x')).toBe(false)
     expect(isLoggedIn()).toBe(false)
   })
 
-  it('logout clears the flag', () => {
-    window.localStorage.setItem('prelegal.loggedIn', 'true')
-    logout()
-    expect(isLoggedIn()).toBe(false)
+  it('signup stores the token on success', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ token: 't2' }), { status: 200 })))
+    const result = await signup('newbie', 'pw')
+    expect(result.ok).toBe(true)
+    expect(getToken()).toBe('t2')
+  })
+
+  it('signup reports a duplicate username', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('dup', { status: 409 })))
+    const result = await signup('demo', 'pw')
+    expect(result.ok).toBe(false)
+    expect(result.error).toMatch(/taken/)
+  })
+
+  it('logout clears the token', async () => {
+    window.localStorage.setItem('prelegal.token', 't')
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 200 })))
+    await logout()
+    expect(getToken()).toBeNull()
   })
 })

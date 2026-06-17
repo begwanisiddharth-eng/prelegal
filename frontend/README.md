@@ -21,23 +21,29 @@ app is statically exported (`output: 'export'`) for the backend to serve.
 
 ```
 app/
-  page.tsx                layout; chosen document, markdown, and field state
-  login/page.tsx          login screen (posts to /api/login)
-  AuthGuard.tsx           gates pages behind the login flag
+  page.tsx                Home (Start New Conversation / Download Saved Documents)
+  login/page.tsx          login screen (+ link to sign up)
+  signup/page.tsx         account creation (auto-login on success)
+  create/page.tsx         document creator: chat + preview, save / generate / nav
+  saved/page.tsx          list and download the user's saved documents
+  AuthGuard.tsx           gates pages behind a token (allows /login and /signup)
 components/
   ChatPanel.tsx           left-hand AI chat (posts to /api/chat)
-  TemplatePreview.tsx     live HTML preview of the chosen template (right panel)
+  TemplatePreview.tsx     live HTML preview of the chosen template
   TemplatePdfDocument.tsx react-pdf document (red underline for unfilled blanks)
-  DownloadButton.tsx      generates the PDF on click
+  Dialog.tsx              custom Confirm / Notice / Prompt dialogs
 lib/
   template.ts             markdown -> blocks/segments parser (shared by preview + PDF)
   chat.ts                 chat + template client
-  auth.ts                 login/logout helpers
+  documents.ts            saved-documents client
+  auth.ts                 token-based login/signup/logout helpers
+  pdf.tsx                 lazy PDF generation + download
   api.ts                  shared API base URL
 ```
 
 ## Key behaviour notes
 
-- The right-hand preview is a live HTML rendering that updates instantly on every keystroke.
-- The actual PDF is generated only when the user clicks Download, so react-pdf never runs during editing.
-- This avoids the iframe-reload flicker that an embedded live PDF viewer causes (a new blob URL on every edit forces the iframe to reload and flash blank).
+- The preview is a live HTML rendering that updates as the chat fills fields.
+- The PDF is generated only on demand (Save/Generate/Download), so react-pdf never runs during editing — avoiding the iframe-reload flicker an embedded live PDF viewer causes.
+- Auth is token-based (stored in `localStorage`, sent as `Authorization: Bearer`). Saved documents are per-user; conversations are not persisted.
+- Unsaved-changes warnings (Home, Log Out) and the Generate-PDF notice are custom dialogs, never the browser's.
