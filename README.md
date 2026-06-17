@@ -1,6 +1,8 @@
 # prelegal
 
-A platform for drafting common legal agreements.
+A platform for drafting common legal agreements. The intended experience is an
+AI chat that establishes which document a user wants and helps fill in its
+fields.
 
 ## Status
 
@@ -37,7 +39,10 @@ See [`frontend/TESTING.md`](frontend/TESTING.md) for the manual test checklist.
 
 - **Frontend**: Next.js 16, TypeScript, Tailwind CSS, `@react-pdf/renderer`
 - **Backend**: FastAPI (planned), Python via `uv`
+- **AI**: LiteLLM against `groq/openai/gpt-oss-120b` (Groq), Structured Outputs (planned)
 
 ## Legal Templates
 
-`catalog.json` + `templates/` — 12 CommonPaper standard agreements (Mutual NDA, BAA, DPA, CSA, and others) in Markdown with structured variable placeholders.
+`catalog.json` + `templates/` — 12 CommonPaper catalog entries (11 agreement
+types such as Mutual NDA, BAA, DPA, and CSA, plus the Mutual NDA cover page) in
+Markdown with structured variable placeholders.
