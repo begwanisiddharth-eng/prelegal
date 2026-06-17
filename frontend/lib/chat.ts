@@ -1,4 +1,4 @@
-import { API_BASE } from './api'
+import { apiFetch } from './api'
 
 export interface ChatMessage {
   role: 'user' | 'assistant'
@@ -22,7 +22,7 @@ export async function sendChat(
   document: string,
   fields: FieldValue[],
 ): Promise<ChatResponse> {
-  const response = await fetch(`${API_BASE}/api/chat`, {
+  const response = await apiFetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messages, document, fields }),
@@ -39,7 +39,7 @@ export interface Template {
 
 /** Fetch a template's markdown and parsed placeholder list by filename. */
 export async function fetchTemplate(filename: string): Promise<Template> {
-  const response = await fetch(`${API_BASE}/api/templates/${encodeURIComponent(filename)}`)
+  const response = await apiFetch(`/api/templates/${encodeURIComponent(filename)}`)
   if (!response.ok) throw new Error('Template fetch failed')
   return response.json()
 }

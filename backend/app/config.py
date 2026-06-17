@@ -12,8 +12,7 @@ PROJECT_ROOT = BACKEND_DIR.parent
 # Load the project-root .env so GROQ_API_KEY is available to the LLM client.
 load_dotenv(PROJECT_ROOT / ".env")
 
-# SQLite database location. Temporary by default (recreated on startup); point
-# PRELEGAL_DB_PATH at a durable location when persistence is introduced.
+# Persistent SQLite database location (override with PRELEGAL_DB_PATH).
 DB_PATH = Path(os.getenv("PRELEGAL_DB_PATH", BACKEND_DIR / "prelegal.db"))
 DATABASE_URL = f"sqlite:///{DB_PATH}"
 
@@ -21,6 +20,12 @@ DATABASE_URL = f"sqlite:///{DB_PATH}"
 # only when present, so the API can run without a frontend build (e.g. tests).
 FRONTEND_DIR = Path(os.getenv("PRELEGAL_FRONTEND_DIR", PROJECT_ROOT / "frontend" / "out"))
 
-# Credentials seeded for the temporary dummy login.
+# Credentials seeded for the default demo login.
 SEED_USERNAME = os.getenv("PRELEGAL_SEED_USER", "demo")
 SEED_PASSWORD = os.getenv("PRELEGAL_SEED_PASSWORD", "demo")
+
+# Allowed CORS origins (comma-separated) for the cross-origin dev frontend.
+CORS_ORIGINS = os.getenv("PRELEGAL_CORS_ORIGINS", "http://localhost:3000").split(",")
+
+# Session lifetime in hours.
+SESSION_TTL_HOURS = int(os.getenv("PRELEGAL_SESSION_TTL_HOURS", "168"))

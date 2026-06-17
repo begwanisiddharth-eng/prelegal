@@ -1,27 +1,16 @@
 /** Token-based auth helpers backed by the FastAPI session API. */
 
-import { API_BASE } from './api'
+import { API_BASE, authHeaders, clearToken, getToken, setToken } from './api'
 
-const TOKEN_KEY = 'prelegal.token'
-
-export function getToken(): string | null {
-  return typeof window !== 'undefined' ? window.localStorage.getItem(TOKEN_KEY) : null
-}
+// Re-exported so callers can keep importing them from '@/lib/auth'.
+export { authHeaders, getToken } from './api'
 
 export function isLoggedIn(): boolean {
   return !!getToken()
 }
 
-/** Authorization header for authenticated API calls. */
-export function authHeaders(): Record<string, string> {
-  const token = getToken()
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
-
-function setToken(token: string): void {
-  window.localStorage.setItem(TOKEN_KEY, token)
-}
-
+// login/signup use plain fetch (not apiFetch): their 401/409 responses are
+// expected and handled here, and must not trigger the global redirect.
 export async function login(username: string, password: string): Promise<boolean> {
   const response = await fetch(`${API_BASE}/api/login`, {
     method: 'POST',
@@ -59,5 +48,5 @@ export async function logout(): Promise<void> {
   } catch {
     // Clear locally regardless of network result.
   }
-  window.localStorage.removeItem(TOKEN_KEY)
+  clearToken()
 }

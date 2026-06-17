@@ -3,11 +3,12 @@
 import json
 
 import litellm
+from fastapi import HTTPException
 from litellm import completion
 from pydantic import BaseModel, Field, ValidationError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from app.templates import load_catalog, parse_placeholders, read_template
+from app.templates import catalog_filenames, load_catalog, parse_placeholders, read_template
 
 MODEL = "groq/openai/gpt-oss-120b"
 
@@ -116,6 +117,8 @@ def _complete(messages: list[dict]) -> ChatResponse:
 
 def run_chat(request: ChatRequest) -> ChatResponse:
     """Send the conversation to the model and return its reply, document, and fields."""
+    if request.document and request.document not in catalog_filenames():
+        raise HTTPException(status_code=400, detail="Unknown document")
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "system", "content": _context_message(request.document, request.fields)},

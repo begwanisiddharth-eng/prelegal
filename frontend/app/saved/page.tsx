@@ -11,9 +11,10 @@ export default function SavedPage() {
   const router = useRouter()
   const [documents, setDocuments] = useState<SavedDocument[] | null>(null)
   const [downloadingId, setDownloadingId] = useState<number | null>(null)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
-    listDocuments().then(setDocuments).catch(() => setDocuments([]))
+    listDocuments().then(setDocuments).catch(() => setError(true))
   }, [])
 
   async function handleLogout() {
@@ -26,6 +27,8 @@ export default function SavedPage() {
     try {
       const template = await fetchTemplate(doc.document)
       await downloadPdf(template.markdown, fieldsToMap(doc.fields), pdfName(doc.document))
+    } catch {
+      setError(true)
     } finally {
       setDownloadingId(null)
     }
@@ -47,7 +50,9 @@ export default function SavedPage() {
 
       <main className="flex-1 overflow-y-auto p-6">
         <div className="mx-auto max-w-2xl">
-          {documents === null ? (
+          {error ? (
+            <p className="text-sm text-red-600">Something went wrong. Please try again.</p>
+          ) : documents === null ? (
             <p className="text-sm text-gray-400">Loading...</p>
           ) : documents.length === 0 ? (
             <p className="text-sm text-gray-500">You have no saved documents yet.</p>

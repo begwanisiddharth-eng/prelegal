@@ -22,13 +22,14 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column()
 
 
-class Session(Base):
-    """An auth session: a bearer token mapped to a user."""
+class AuthSession(Base):
+    """An auth session: a bearer token mapped to a user, with an expiry."""
 
     __tablename__ = "sessions"
 
     token: Mapped[str] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    expires_at: Mapped[str] = mapped_column()  # ISO timestamp
 
 
 class SavedDocument(Base):

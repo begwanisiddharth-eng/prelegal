@@ -7,14 +7,14 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from app import config
 from app.auth import bearer, create_session, get_current_user, hash_password, verify_password
 from app.chat import ChatRequest, ChatResponse, FieldValue, run_chat
 from app.db import SessionLocal, init_db
-from app.models import SavedDocument, Session, User, now_iso
+from app.models import AuthSession, SavedDocument, User, now_iso
 from app.templates import catalog_filenames, load_catalog, parse_placeholders, read_template
 
 
@@ -38,15 +38,15 @@ app = FastAPI(title="Prelegal", lifespan=lifespan)
 # The Next.js dev server runs on a separate origin; allow it during development.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=config.CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
 class Credentials(BaseModel):
-    username: str
-    password: str
+    username: str = Field(min_length=1)
+    password: str = Field(min_length=1)
 
 
 class DocumentIn(BaseModel):
@@ -93,7 +93,7 @@ def logout(credentials: HTTPAuthorizationCredentials | None = Depends(bearer)) -
     """Delete the caller's session token."""
     if credentials:
         with SessionLocal() as db:
-            session = db.get(Session, credentials.credentials)
+            session = db.get(AuthSession, credentials.credentials)
             if session:
                 db.delete(session)
                 db.commit()
@@ -153,12 +153,12 @@ def update_document(doc_id: int, body: DocumentUpdate, user: User = Depends(get_
 
 
 @app.get("/api/catalog")
-def catalog() -> list[dict]:
+def catalog(user: User = Depends(get_current_user)) -> list[dict]:
     return load_catalog()
 
 
 @app.get("/api/templates/{filename}")
-def template(filename: str) -> dict:
+def template(filename: str, user: User = Depends(get_current_user)) -> dict:
     if filename not in catalog_filenames():
         raise HTTPException(status_code=404, detail="Unknown template")
     markdown = read_template(filename)
@@ -166,7 +166,7 @@ def template(filename: str) -> dict:
 
 
 @app.post("/api/chat")
-def chat(req: ChatRequest) -> ChatResponse:
+def chat(req: ChatRequest, user: User = Depends(get_current_user)) -> ChatResponse:
     return run_chat(req)
 
 

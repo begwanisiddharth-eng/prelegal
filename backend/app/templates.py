@@ -27,6 +27,9 @@ def catalog_filenames() -> set[str]:
 
 
 def read_template(filename: str) -> str:
+    # Guard against path traversal: only ever read known catalog files.
+    if filename not in catalog_filenames():
+        raise ValueError(f"Unknown template: {filename}")
     return (TEMPLATES_DIR / filename).read_text(encoding="utf-8")
 
 

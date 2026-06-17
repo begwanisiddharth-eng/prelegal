@@ -12,6 +12,11 @@ import { downloadPdf, pdfName } from '@/lib/pdf'
 
 type DialogState = 'save' | 'home' | 'logout' | 'pdf' | null
 
+/** Order-independent signature of the fields, for change detection. */
+function fieldsSignature(fields: FieldValue[]): string {
+  return JSON.stringify([...fields].sort((a, b) => a.name.localeCompare(b.name)))
+}
+
 const primary = 'rounded bg-brand-purple px-4 py-2 text-sm text-white hover:bg-brand-purple/90 transition-colors disabled:opacity-50'
 const accent = 'rounded bg-brand-blue px-4 py-2 text-sm text-white hover:bg-brand-blue/90 transition-colors'
 const secondary = 'rounded border border-gray-300 px-4 py-2 text-sm text-brand-navy hover:bg-gray-100 transition-colors'
@@ -25,9 +30,10 @@ export default function CreatePage() {
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null)
   const [dialog, setDialog] = useState<DialogState>(null)
   const [generating, setGenerating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const fieldsMap = useMemo(() => fieldsToMap(fields), [fields])
-  const dirty = !!document && savedSnapshot !== JSON.stringify(fields)
+  const dirty = !!document && savedSnapshot !== fieldsSignature(fields)
 
   async function handleResult(nextDocument: string, nextFields: FieldValue[]) {
     setFields(nextFields)
@@ -45,18 +51,28 @@ export default function CreatePage() {
     } else {
       await updateDocument(savedId, fields)
     }
-    setSavedSnapshot(JSON.stringify(fields))
+    setSavedSnapshot(fieldsSignature(fields))
+  }
+
+  async function save(name?: string) {
+    try {
+      await persist(name)
+    } catch {
+      setError('Could not save your document. Please try again.')
+    }
   }
 
   function handleSave() {
     if (savedId === null) setDialog('save')
-    else persist()
+    else save()
   }
 
   async function doDownload() {
     setGenerating(true)
     try {
       await downloadPdf(markdown, fieldsMap, pdfName(document))
+    } catch {
+      setError('Could not generate the PDF. Please try again.')
     } finally {
       setGenerating(false)
     }
@@ -128,7 +144,7 @@ export default function CreatePage() {
           label="Name this document"
           onSubmit={(name) => {
             setDialog(null)
-            persist(name)
+            save(name)
           }}
           onCancel={() => setDialog(null)}
         />
@@ -166,6 +182,9 @@ export default function CreatePage() {
           }}
           onCancel={() => setDialog(null)}
         />
+      )}
+      {error && (
+        <NoticeDialog title="Something went wrong" message={error} onOk={() => setError(null)} />
       )}
     </div>
   )

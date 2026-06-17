@@ -23,13 +23,16 @@ use the project-root start script, which builds the frontend first.
 - `POST /api/logout` — invalidates the caller's token.
 - `GET/POST/PUT /api/documents` — per-user saved documents (auth required via
   `Authorization: Bearer <token>`); each user sees only their own.
+All of the following also require auth (`Authorization: Bearer <token>`):
+
 - `GET /api/catalog` — the 11 selectable document types (cover-page entry excluded).
 - `GET /api/templates/{filename}` — a template's markdown plus its parsed
   placeholder list (`<span class="*_link">Name</span>` fields).
 - `POST /api/chat` `{messages, document, fields}` — sends the conversation to the
   LLM (LiteLLM → Groq `gpt-oss-120b`, JSON mode + Pydantic validation) and returns
-  the assistant reply, the chosen document, and the updated fields. Stateless.
-  Requires `GROQ_API_KEY` in the project-root `.env`.
+  the assistant reply, the chosen document, and the updated fields. Stateless;
+  rejects a `document` outside the catalog. Requires `GROQ_API_KEY` in the
+  project-root `.env`.
 
 ## Database
 
