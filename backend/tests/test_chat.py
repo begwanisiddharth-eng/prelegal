@@ -8,28 +8,19 @@ from fastapi.testclient import TestClient
 from app import chat as chat_module
 from app.main import app
 
-CANNED_FIELDS = {
-    "purpose": "Evaluating a partnership",
-    "effectiveDate": "",
-    "mndaTermType": "fixed",
-    "mndaTermYears": "",
-    "confidentialityTermType": "fixed",
-    "confidentialityTermYears": "",
-    "governingLaw": "",
-    "jurisdiction": "",
-    "party1": {"printName": "", "title": "", "company": "", "noticeAddress": "", "date": ""},
-    "party2": {"printName": "", "title": "", "company": "", "noticeAddress": "", "date": ""},
-}
-
 
 def fake_completion(**kwargs):
-    payload = {"reply": "Got it. What is the purpose?", "fields": CANNED_FIELDS}
+    payload = {
+        "reply": "Got it. What is the purpose?",
+        "document": "Mutual-NDA.md",
+        "fields": [{"name": "Purpose", "value": "Evaluating a partnership"}],
+    }
     message = SimpleNamespace(content=json.dumps(payload))
     return SimpleNamespace(choices=[SimpleNamespace(message=message)])
 
 
-def test_chat_returns_reply_and_fields(monkeypatch):
-    monkeypatch.setattr(chat_module, "completion_with_backoff", fake_completion)
+def test_chat_returns_reply_document_and_fields(monkeypatch):
+    monkeypatch.setattr(chat_module, "completion", fake_completion)
     with TestClient(app) as client:
         response = client.post(
             "/api/chat",
@@ -37,28 +28,29 @@ def test_chat_returns_reply_and_fields(monkeypatch):
         )
     assert response.status_code == 200
     body = response.json()
-    assert body["reply"]
-    assert body["fields"]["purpose"] == "Evaluating a partnership"
+    assert body["document"] == "Mutual-NDA.md"
+    assert body["fields"][0]["name"] == "Purpose"
 
 
-def test_chat_sends_system_prompt_history_and_known_fields(monkeypatch):
+def test_chat_sends_catalog_and_placeholders(monkeypatch):
     captured = {}
 
     def capture(**kwargs):
         captured.update(kwargs)
         return fake_completion(**kwargs)
 
-    monkeypatch.setattr(chat_module, "completion_with_backoff", capture)
+    monkeypatch.setattr(chat_module, "completion", capture)
     with TestClient(app) as client:
         client.post(
             "/api/chat",
             json={
-                "messages": [{"role": "user", "content": "hello"}],
-                "fields": {"governingLaw": "Delaware"},
+                "messages": [{"role": "user", "content": "fill it in"}],
+                "document": "Mutual-NDA.md",
+                "fields": [{"name": "Governing Law", "value": "Delaware"}],
             },
         )
 
-    messages = captured["messages"]
-    assert messages[0]["role"] == "system"
-    assert any("Delaware" in m["content"] for m in messages)
-    assert messages[-1] == {"role": "user", "content": "hello"}
+    context = "\n".join(m["content"] for m in captured["messages"] if m["role"] == "system")
+    assert "Cloud Service Agreement" in context  # catalog is provided
+    assert "Purpose" in context  # parsed placeholders for the chosen document
+    assert "Delaware" in context  # current field values

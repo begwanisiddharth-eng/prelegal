@@ -12,6 +12,7 @@ from app import config
 from app.chat import ChatRequest, ChatResponse, run_chat
 from app.db import SessionLocal, init_db
 from app.models import User
+from app.templates import catalog_filenames, load_catalog, parse_placeholders, read_template
 
 
 def seed_user() -> None:
@@ -59,6 +60,23 @@ def login(req: LoginRequest) -> dict:
     if user is None or user.password != req.password:
         raise HTTPException(status_code=401, detail="Invalid username or password")
     return {"ok": True, "username": user.username}
+
+
+@app.get("/api/catalog")
+def catalog() -> list[dict]:
+    return load_catalog()
+
+
+@app.get("/api/templates/{filename}")
+def template(filename: str) -> dict:
+    if filename not in catalog_filenames():
+        raise HTTPException(status_code=404, detail="Unknown template")
+    markdown = read_template(filename)
+    return {
+        "filename": filename,
+        "markdown": markdown,
+        "placeholders": parse_placeholders(markdown),
+    }
 
 
 @app.post("/api/chat")

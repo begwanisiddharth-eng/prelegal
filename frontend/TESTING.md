@@ -20,18 +20,16 @@ itself (see `playwright.config.ts`). First run needs the browser binary:
 
 ### What the automated tests cover
 
-- `lib/mnda.ts`: term/suffix text, placeholder replacement, `parseSegments`,
-  and the default effective date using the **local** calendar day (regression
-  for the UTC off-by-one).
+- `lib/template.ts`: parsing headings, paragraphs, bold, lists (markers,
+  indentation, checkboxes), tables, and `*_link` placeholder segments; plus a
+  real full template parsed without leaking HTML.
 - `ChatPanel`: the greeting on mount, sending a message and showing the reply,
-  field updates flowing to the preview, and the error state on a failed request.
-- `lib/chat.ts`: posting to `/api/chat` and surfacing request failures.
-- `MNDAHtmlPreview`: live values, the trade-secret carve-out toggling with the
-  confidentiality term, placeholder substitution, and the signature table.
-- `MNDADownloadButton`: PDF generation on click, the `mutual-nda.pdf` download
-  wiring, idle-state reset after completion, and deferred object-URL revoke.
-- E2E: full page render, a chat answer updating the preview, the carve-out
-  toggle (both driven by a mocked `/api/chat`), and a real PDF download.
+  reporting the document/fields result, and the error state on a failed request.
+- `lib/chat.ts`: `sendChat`, `fetchTemplate`, and `fieldsToMap`.
+- `TemplatePreview`: rendering template text and filling placeholders from fields.
+- E2E: login redirect, the greeting + empty preview state, choosing a document
+  (mocked `/api/chat` + `/api/templates`) and seeing the filled preview, and a
+  real PDF download.
 
 ---
 
@@ -43,23 +41,22 @@ behind the login. These cover things the automated suite cannot assert (visual
 fidelity, real PDF output, accessibility, and OS-level behaviour).
 
 ### Chat (needs the backend running with a valid `GROQ_API_KEY`)
-- [ ] The assistant greeting appears on load; typing an answer and sending gets
-      a relevant reply.
-- [ ] Answers populate the right-hand preview (e.g. mention a purpose, governing
-      law, or party names and watch the cover page update).
+- [ ] The assistant greets and asks which document on load.
+- [ ] Ask for a supported document (e.g. "cloud service agreement"); it is
+      selected and the full template renders on the right with underlined blanks.
+- [ ] Ask for an unsupported document (e.g. "employment contract"); the assistant
+      explains it can't and suggests the closest catalog document.
+- [ ] As you answer, the blanks fill in; questions come most-important-first.
+- [ ] Say "generate as-is"; the assistant stops asking and says it's ready.
 - [ ] A backend/LLM failure shows the inline "Please try again" error.
 
 ### PDF output (open the downloaded file)
-- [ ] Click **Download PDF**; a `mutual-nda.pdf` opens.
-- [ ] Cover Page shows Purpose, Effective Date, MNDA Term, Term of
-      Confidentiality, Governing Law, Jurisdiction, and the signature table.
-- [ ] The downloaded PDF visually matches the on-screen HTML preview.
-- [ ] Bold runs (defined terms, section headings) render bold in the PDF.
-- [ ] Page 2 "Standard Terms" has all 11 numbered clauses with placeholders
-      filled in (no literal `coverpage_link` or `[Purpose]`-style brackets when
-      fields are filled).
-- [ ] Fill a very long Purpose and long notice addresses; text wraps and the
-      table does not overflow the page.
+- [ ] Click **Download PDF**; a PDF named after the document opens.
+- [ ] **Unfilled** placeholders show a **red underline** in the PDF (and are NOT
+      red in the on-screen preview).
+- [ ] Filled placeholder values appear (underlined), bold runs render bold, and
+      headings/lists/tables are readable.
+- [ ] Long answers wrap and content flows across pages without overflow.
 
 ### Error resilience
 - [ ] Trigger a failure during generation (e.g. throttle/offline) and confirm
@@ -69,12 +66,9 @@ fidelity, real PDF output, accessibility, and OS-level behaviour).
       revoked cleanly).
 
 ### Live preview
-- [ ] As the chat fills fields, the right-hand preview updates with no blank
-      flash or flicker (no `<PDFViewer>` reload).
-- [ ] Tell the assistant the MNDA term "continues until terminated"; the cover
-      page text updates accordingly.
-- [ ] Tell the assistant confidentiality lasts "in perpetuity"; the trade-secret
-      carve-out sentence disappears.
+- [ ] As the chat fills fields, the preview updates with no blank flash or
+      flicker (no `<PDFViewer>` reload).
+- [ ] Repeated placeholders (e.g. "Customer" throughout) all fill from one answer.
 
 ### Accessibility / keyboard
 - [ ] Tab to the message input and Send button in a logical order.

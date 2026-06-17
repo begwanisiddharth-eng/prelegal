@@ -142,3 +142,21 @@ faithful to the generated PDF.
 - Still Mutual-NDA-only; no document-type selection yet.
 - pytest for the chat endpoint (LLM call stubbed); Vitest for `ChatPanel` and
   the chat client; E2E drives the chat with a mocked `/api/chat`.
+
+### Implemented PL-6
+
+- All 11 catalog document types are supported. The chat greets, asks which
+  document, and for an unsupported request suggests the nearest catalog document.
+- Generic engine replaces the MNDA-specific code. `app/templates.py` serves
+  `GET /api/catalog` and `GET /api/templates/{filename}` and deterministically
+  parses placeholders (every `<span class="*_link">Name</span>`). The frontend
+  `lib/template.ts` parses a template into blocks shared by `TemplatePreview`
+  (HTML, gray blanks) and `TemplatePdfDocument` (react-pdf; **unfilled**
+  placeholders get a red underline in the PDF only).
+- `POST /api/chat` is document-agnostic: it carries the chosen document and a
+  dynamic field list, picks the document (nearest-from-catalog for unsupported
+  requests), and asks about fields most-important-first so an early opt-out
+  still captures the key fields. It uses JSON mode with Pydantic validation and
+  retries on a malformed response (Groq's strict json_schema mode was brittle).
+- Removed the MNDA-specific `lib/mnda.ts`, `MNDAHtmlPreview`, `MNDAPdfDocument`,
+  and `MNDADownloadButton`. Tests updated across backend, Vitest, and E2E.
